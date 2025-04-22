@@ -1,12 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-secondary-900 min-h-screen w-full m-0 p-0;
+  }
+
+  #root {
+    @apply min-h-screen w-full;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded font-medium transition-all duration-200;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary-100 text-secondary-900 hover:bg-secondary-200 border border-secondary-200;
+  }
+
+  .btn-accent {
+    @apply bg-accent-500 text-white hover:bg-accent-600 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2;
+  }
+  
+  .input {
+    @apply w-full px-3 py-2 border border-secondary-200 rounded bg-white text-secondary-900 placeholder-secondary-400 
+    focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 
+    hover:border-secondary-300 transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-md border border-secondary-200 hover:shadow-lg transition-shadow duration-200;
+  }
+
+  .nav-link {
+    @apply text-secondary-900 hover:text-primary-500 transition-colors duration-200;
+  }
+
+  .heading-1 {
+    @apply text-4xl font-bold text-secondary-900;
+  }
+
+  .heading-2 {
+    @apply text-3xl font-semibold text-secondary-900;
+  }
+
+  .heading-3 {
+    @apply text-2xl font-semibold text-secondary-900;
+  }
+
+  .text-body {
+    @apply text-secondary-700;
+  }
+
+  .category-card {
+    @apply relative overflow-hidden rounded-lg shadow-lg border-2 border-secondary-200 hover:border-primary-500 transition-all duration-200;
+  }
+
+  .category-card img {
+    @apply w-full h-48 object-cover transition-transform duration-200;
+  }
+
+  .category-card:hover img {
+    @apply transform scale-105;
+  }
+
+  .category-card-content {
+    @apply absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 text-white p-4;
+  }
+
+  .category-title {
+    @apply text-2xl font-bold mb-2;
+  }
+
+  .hero-section {
+    @apply relative bg-gradient-to-r from-secondary-900 to-secondary-800 text-white py-20 px-4 sm:px-6 lg:px-8;
+  }
+
+  .hero-content {
+    @apply max-w-7xl mx-auto text-center;
+  }
+
+  .hero-title {
+    @apply text-5xl font-bold mb-6;
+  }
+
+  .hero-subtitle {
+    @apply text-xl mb-8 max-w-2xl mx-auto;
+  }
+
+  .featured-section {
+    @apply py-16 bg-secondary-50;
+  }
+
+  .section-title {
+    @apply text-3xl font-bold text-center mb-12 text-secondary-900;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-red {
+    @apply bg-primary-100 text-primary-800;
+  }
+
+  .badge-gray {
+    @apply bg-secondary-100 text-secondary-800;
+  }
+
+  .price {
+    @apply text-primary-500 font-semibold text-lg;
+  }
+
+  .price-old {
+    @apply text-secondary-400 line-through text-sm;
+  }
+
+  .discount-tag {
+    @apply bg-primary-500 text-white text-xs font-bold px-2 py-1 rounded;
+  }
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #18181b;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -15,17 +143,17 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #ef4444;
   text-decoration: inherit;
+  transition: color 0.2s ease;
 }
+
 a:hover {
-  color: #535bf2;
+  color: #dc2626;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -33,6 +161,8 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  color: #ffffff;
+  font-weight: 700;
 }
 
 button {
@@ -42,25 +172,29 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #ef4444;
+  color: white;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.2s ease;
 }
+
 button:hover {
-  border-color: #646cff;
+  background-color: #dc2626;
 }
+
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
+    color: #404040;
     background-color: #ffffff;
   }
   a:hover {
-    color: #747bff;
+    color: #dc2626;
   }
   button {
     background-color: #f9f9f9;
