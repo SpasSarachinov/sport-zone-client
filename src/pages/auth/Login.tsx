@@ -1,52 +1,51 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../store';
-import { loginStart, loginSuccess, loginFailure } from '../../store/slices/authSlice';
+import { useDispatch } from 'react-redux';
+import { setUser, setToken } from '../../store/slices/authSlice';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading } = useSelector((state: RootState) => state.auth);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    dispatch(loginStart());
+    setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/Auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Входът е неуспешен');
+        throw new Error(data.message || 'Грешка при влизане');
       }
 
-      const data = await response.json();
-      dispatch(loginSuccess(data));
+      localStorage.setItem('token', data.token);
+      
+      dispatch(setToken(data.token));
+      dispatch(setUser({
+        id: data.id,
+        email: data.email,
+        name: data.names,
+        role: data.role,
+      }));
+
       navigate('/');
     } catch (err) {
-      dispatch(loginFailure(err instanceof Error ? err.message : 'Възникна грешка'));
-      setError('Възникна грешка при входа. Моля, опитайте отново.');
+      setError(err instanceof Error ? err.message : 'Грешка при влизане');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -84,10 +83,10 @@ const Login = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-white placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете имейл адрес"
-                value={formData.email}
-                onChange={handleChange}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
@@ -100,10 +99,10 @@ const Login = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-white placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете парола"
-                value={formData.password}
-                onChange={handleChange}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>
@@ -111,16 +110,16 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              disabled={isLoading}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-dark-900 bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              {loading ? (
+              {isLoading ? (
                 <span className="flex items-center">
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Вход...
+                  Влизане...
                 </span>
               ) : (
                 'Вход'

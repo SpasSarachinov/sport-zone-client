@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
@@ -8,18 +8,39 @@ import { ShoppingCartIcon } from '@heroicons/react/24/outline';
 interface User {
   id: string;
   email: string;
-  fullName: string;
+  name: string;
   role: string;
 }
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     dispatch(logout());
+    navigate('/');
   };
+
+  const getUserInitial = () => {
+    if (!user?.name) return '?';
+    return user.name.charAt(0).toUpperCase();
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <nav className="bg-white shadow-md">
@@ -62,21 +83,24 @@ const Navbar = () => {
               <ShoppingCartIcon className="h-6 w-6" />
             </Link>
             {isAuthenticated ? (
-              <div className="ml-3 relative">
+              <div className="ml-3 relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsOpen(!isOpen)}
                   className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   <span className="sr-only">Open user menu</span>
-                  <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-white">
-                    {user?.fullName.charAt(0)}
-                  </div>
+                  <img
+                    src="https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small_2x/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg"
+                    alt="Profile"
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
                 </button>
                 {isOpen && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5">
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50">
                     <Link
                       to="/profile"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsOpen(false)}
                     >
                       Профил
                     </Link>

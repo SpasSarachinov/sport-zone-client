@@ -11,25 +11,93 @@ import ProductCard from '../components/products/ProductCard';
 import FilterSidebar from '../components/products/FilterSidebar';
 import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
 
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  category: string;
-  image: string;
-  rating: number;
-  discount?: number;
-  stock: number;
-  reviews: Array<{
-    id: string;
-    userId: string;
-    userName: string;
-    rating: number;
-    comment: string;
-    date: string;
-  }>;
-}
+// Hardcoded products data
+const hardcodedProducts = [
+  {
+    id: '1',
+    name: 'Nike Air Max 270',
+    description: 'Модерни маратонки с въздушна подложка за максимален комфорт при бягане.',
+    price: 299.99,
+    discount: 20,
+    category: 'Маратонки',
+    stock: 10,
+    rating: 4.5,
+    reviews: [
+      {
+        id: '1',
+        userId: '1',
+        userName: 'Иван Петров',
+        rating: 5,
+        comment: 'Отлични маратонки!',
+        date: '2024-02-15',
+      },
+    ],
+    image: 'https://example.com/shoe1.jpg',
+  },
+  {
+    id: '2',
+    name: 'Adidas Predator Edge',
+    description: 'Футболни кецове с подобрена контрола и точност.',
+    price: 249.99,
+    discount: 0,
+    category: 'Футболни кецове',
+    stock: 15,
+    rating: 4.8,
+    reviews: [
+      {
+        id: '2',
+        userId: '2',
+        userName: 'Георги Иванов',
+        rating: 5,
+        comment: 'Най-добрите футболни кецове!',
+        date: '2024-02-10',
+      },
+    ],
+    image: 'https://example.com/shoe2.jpg',
+  },
+  {
+    id: '3',
+    name: 'Wilson Pro Staff',
+    description: 'Тенис ракета за професионалисти.',
+    price: 199.99,
+    discount: 15,
+    category: 'Тенис',
+    stock: 8,
+    rating: 4.7,
+    reviews: [
+      {
+        id: '3',
+        userId: '3',
+        userName: 'Мария Георгиева',
+        rating: 4,
+        comment: 'Отлично качество!',
+        date: '2024-02-05',
+      },
+    ],
+    image: 'https://example.com/racket1.jpg',
+  },
+  {
+    id: '4',
+    name: 'Nike Dri-FIT',
+    description: 'Спортен тениска с технология за изсушаване на потта.',
+    price: 49.99,
+    discount: 0,
+    category: 'Спортни дрехи',
+    stock: 20,
+    rating: 4.3,
+    reviews: [
+      {
+        id: '4',
+        userId: '4',
+        userName: 'Петър Стоянов',
+        rating: 5,
+        comment: 'Много удобна тениска!',
+        date: '2024-02-01',
+      },
+    ],
+    image: 'https://example.com/tshirt1.jpg',
+  },
+];
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,21 +107,9 @@ const Products = () => {
   );
   const { user } = useSelector((state: RootState) => state.auth);
 
+  // Set hardcoded products on component mount
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('/api/products');
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
-        }
-        const data = await response.json();
-        dispatch(setProducts(data));
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
-    };
-
-    fetchProducts();
+    dispatch(setProducts(hardcodedProducts));
   }, [dispatch]);
 
   useEffect(() => {
@@ -133,6 +189,7 @@ const Products = () => {
               Намерени {filteredProducts.length} продукта
             </p>
           </div>
+          {/* Admin Panel Links - Only visible to admin users */}
           {user?.role === 'admin' && (
             <div className="flex space-x-4">
               <Link

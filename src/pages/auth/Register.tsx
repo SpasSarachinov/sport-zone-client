@@ -1,22 +1,21 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../store';
-import { loginStart, loginSuccess, loginFailure } from '../../store/slices/authSlice';
+import { useDispatch } from 'react-redux';
+import { setUser, setToken } from '../../store/slices/authSlice';
 import TermsOfService from '../../components/modals/TermsOfService';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    fullName: '',
+    names: '',
     email: '',
     password: '',
     confirmPassword: '',
-    phoneNumber: '',
+    phone: '',
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading } = useSelector((state: RootState) => state.auth);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
@@ -45,31 +44,59 @@ const Register = () => {
       return;
     }
 
-    dispatch(loginStart());
+    setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const requestBody = {
+        names: formData.names,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+      };
+
+      console.log('Sending registration request with data:', requestBody);
+
+      const response = await fetch('/api/Auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      const data = await response.json();
+      console.log('Registration response:', data);
+
       if (!response.ok) {
-        throw new Error('Регистрацията е неуспешна');
+        // Handle validation errors
+        if (data.errors) {
+          const errorMessages = Object.entries(data.errors)
+            .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
+            .join('\n');
+          throw new Error(errorMessages);
+        }
+        throw new Error(data.message || 'Грешка при регистрация');
       }
 
-      const data = await response.json();
-      dispatch(loginSuccess(data));
+      // Save token to localStorage
+      localStorage.setItem('token', data.token);
+      
+      // Dispatch token and user data to Redux store
+      dispatch(setToken(data.token));
+      dispatch(setUser({
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.names,
+        role: data.user.role,
+      }));
+
+      // Redirect to home page
       navigate('/');
     } catch (err) {
-      dispatch(loginFailure(err instanceof Error ? err.message : 'Възникна грешка'));
-      setError('Възникна грешка при регистрацията. Моля, опитайте отново.');
+      console.error('Registration error:', err);
+      setError(err instanceof Error ? err.message : 'Грешка при регистрация');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -98,17 +125,17 @@ const Register = () => {
           )}
           <div className="space-y-4">
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-dark-700 mb-2">
-                Име и фамилия
+              <label htmlFor="names" className="block text-sm font-medium text-dark-700 mb-2">
+                Имена
               </label>
               <input
-                id="fullName"
-                name="fullName"
+                id="names"
+                name="names"
                 type="text"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-white placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Въведете име и фамилия"
-                value={formData.fullName}
+                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="Въведете имена"
+                value={formData.names}
                 onChange={handleChange}
               />
             </div>
@@ -122,25 +149,25 @@ const Register = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-white placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете имейл адрес"
                 value={formData.email}
                 onChange={handleChange}
               />
             </div>
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-dark-700 mb-2">
+              <label htmlFor="phone" className="block text-sm font-medium text-dark-700 mb-2">
                 Телефонен номер
               </label>
               <input
-                id="phoneNumber"
-                name="phoneNumber"
+                id="phone"
+                name="phone"
                 type="text"
-                autoComplete="phoneNumber"
+                autoComplete="phone"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-white placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете телефонен номер"
-                value={formData.phoneNumber}
+                value={formData.phone}
                 onChange={handleChange}
               />
             </div>
@@ -154,7 +181,7 @@ const Register = () => {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-white placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете парола"
                 value={formData.password}
                 onChange={handleChange}
@@ -170,7 +197,7 @@ const Register = () => {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-white placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете паролата отново"
                 value={formData.confirmPassword}
                 onChange={handleChange}
@@ -201,10 +228,10 @@ const Register = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              disabled={isLoading}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-dark-900 bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              {loading ? (
+              {isLoading ? (
                 <span className="flex items-center">
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

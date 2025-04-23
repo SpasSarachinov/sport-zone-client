@@ -25,32 +25,6 @@ const Footer = () => {
                   За Нас
                 </Link>
               </li>
-              <li>
-                <Link to="/contact" className="text-secondary-300 hover:text-white">
-                  Контакти
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Обслужване</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/shipping" className="text-secondary-300 hover:text-white">
-                  Доставка
-                </Link>
-              </li>
-              <li>
-                <Link to="/returns" className="text-secondary-300 hover:text-white">
-                  Връщане
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="text-secondary-300 hover:text-white">
-                  Често Задавани Въпроси
-                </Link>
-              </li>
             </ul>
           </div>
 
