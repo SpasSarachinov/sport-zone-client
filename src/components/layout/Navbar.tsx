@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { logout } from '../../store/slices/authSlice';
+import { logout, setUser } from '../../store/slices/authSlice';
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { decodeJWT } from '../../utils/jwtUtils';
 
 interface User {
   id: string;
@@ -14,10 +15,29 @@ interface User {
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user, token } = useSelector((state: RootState) => state.auth);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (token) {
+      const decodedToken = decodeJWT(token);
+      console.log('Decoded token in Navbar:', decodedToken);
+      
+      // Check for admin role in the token claims
+      const role = decodedToken?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      console.log('Role from token:', role);
+      
+      const isAdminUser = role === "Admin";
+      console.log('Is admin user:', isAdminUser);
+      
+      setIsAdmin(isAdminUser);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [token]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -65,12 +85,14 @@ const Navbar = () => {
                   >
                     Желани
                   </Link>
-                  <Link
-                    to="/orders"
-                    className="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                  >
-                    Поръчки
-                  </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/admin/products"
+                      className="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                    >
+                      Админ панел
+                    </Link>
+                  )}
                 </>
               )}
             </div>

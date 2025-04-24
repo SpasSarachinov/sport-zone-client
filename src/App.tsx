@@ -9,6 +9,12 @@ import Cart from './pages/Cart';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Profile from './pages/Profile';
+import AdminPanel from './pages/admin/AdminPanel';
+import AdminProducts from './pages/admin/Products';
+import AdminCategories from './pages/admin/Categories';
+import AdminOrders from './pages/admin/Orders';
+import AdminUsers from './pages/admin/Users';
+
 function App() {
   return (
     <Provider store={store}>
@@ -22,6 +28,11 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/admin" element={<AdminPanel />}>
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="users" element={<AdminUsers />} />
+            </Route>
           </Route>
         </Routes>
       </Router>

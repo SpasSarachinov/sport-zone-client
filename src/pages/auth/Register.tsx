@@ -56,7 +56,7 @@ const Register = () => {
 
       console.log('Sending registration request with data:', requestBody);
 
-      const response = await fetch('/api/Auth/register', {
+      const response = await fetch('https://sportzone-api.onrender.com/api/Auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,16 +78,30 @@ const Register = () => {
         throw new Error(data.message || 'Грешка при регистрация');
       }
 
-      // Save token to localStorage
-      localStorage.setItem('token', data.token);
-      
-      // Dispatch token and user data to Redux store
-      dispatch(setToken(data.token));
+      // After successful registration, try to login automatically
+      const loginResponse = await fetch('https://sportzone-api.onrender.com/api/Auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const loginData = await loginResponse.json();
+
+      if (!loginResponse.ok) {
+        throw new Error(loginData.message || 'Успешна регистрация, но възникна грешка при автоматичното влизане');
+      }
+
+      dispatch(setToken(loginData.token));
       dispatch(setUser({
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.names,
-        role: data.user.role,
+        id: data.id,
+        email: formData.email,
+        name: formData.names,
+        role: 'User',
       }));
 
       // Redirect to home page

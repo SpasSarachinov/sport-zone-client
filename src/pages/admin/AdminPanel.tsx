@@ -1,6 +1,16 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 const AdminPanel = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
+  console.log('Current user:', user); // Debug log
+
+  // Redirect non-admin users to home page
+  if (user?.role !== "Admin") {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
@@ -24,12 +34,6 @@ const AdminPanel = () => {
               className="block px-4 py-2 rounded hover:bg-secondary-800 transition-colors"
             >
               Потребители
-            </Link>
-            <Link 
-              to="/admin/orders" 
-              className="block px-4 py-2 rounded hover:bg-secondary-800 transition-colors"
-            >
-              Поръчки
             </Link>
           </nav>
         </aside>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser, setToken } from '../../store/slices/authSlice';
+import { decodeJWT } from '../../utils/jwtUtils';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +18,9 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/Auth/login', {
+      console.log('Attempting login with:', { email, password: '***' });
+      
+      const response = await fetch('https://sportzone-api.onrender.com/api/Auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,23 +29,41 @@ const Login = () => {
       });
 
       const data = await response.json();
+      console.log('Server response:', { status: response.status, data });
 
       if (!response.ok) {
-        throw new Error(data.message || 'Грешка при влизане');
+        throw new Error(data.message || data.title || 'Грешка при влизане');
       }
 
-      localStorage.setItem('token', data.token);
-      
-      dispatch(setToken(data.token));
+      if (!data.accessToken) {
+        console.error('No access token received in response:', data);
+        throw new Error('No authentication token received');
+      }
+
+      // Decode the JWT token to get user information
+      const decodedToken = decodeJWT(data.accessToken);
+      console.log('Login response data:', data);
+      console.log('Decoded token:', decodedToken);
+
+      const role = decodedToken?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      console.log('Role from token:', role);
+
+      dispatch(setToken(data.accessToken));
       dispatch(setUser({
         id: data.id,
         email: data.email,
         name: data.names,
-        role: data.role,
+        role: role || 'User',
       }));
 
-      navigate('/');
+      // Only redirect to admin panel if user is admin
+      if (role === "Admin") {
+        navigate('/admin/products');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
+      console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Грешка при влизане');
     } finally {
       setIsLoading(false);
