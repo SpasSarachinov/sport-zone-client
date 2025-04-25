@@ -1,115 +1,82 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { addItem } from '../../store/slices/cartSlice';
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
-import { StarIcon } from '@heroicons/react/24/solid';
 
 interface Product {
   id: string;
-  name: string;
+  title: string;
   description: string;
-  price: number;
-  image: string;
-  category: string;
-  stock: number;
-  rating: number;
-  reviews: {
-    id: string;
-    userId: string;
-    userName: string;
-    rating: number;
-    comment: string;
-    date: string;
-  }[];
-  discount?: number;
+  imageUrl: string;
+  regularPrice: number;
+  quantity: number;
+  categoryId: string;
 }
 
 interface ProductCardProps {
   product: Product;
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const dispatch = useDispatch();
 
   const handleAddToCart = () => {
     dispatch(
       addItem({
         id: product.id,
-        name: product.name,
-        price: product.price,
+        title: product.title,
+        regularPrice: product.regularPrice,
         quantity: 1,
-        image: product.image,
+        imageUrl: product.imageUrl,
       })
     );
   };
 
-  const discountedPrice = product.discount
-    ? product.price * (1 - product.discount / 100)
-    : product.price;
+  const displayPrice = (price: number | undefined) => {
+    if (price === undefined) return '0.00';
+    return price.toFixed(2);
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="relative">
-        <Link to={`/products/${product.id}`}>
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-48 object-cover"
-          />
-        </Link>
-        {product.discount && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-sm">
-            -{product.discount}%
-          </div>
-        )}
+    <div className="group relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+      {/* Product Image */}
+      <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-200">
+        <img
+          src={product.imageUrl || '/placeholder-image.jpg'}
+          alt={product.title}
+          className="h-full w-full object-cover object-center group-hover:opacity-75 transition-opacity duration-300"
+        />
       </div>
 
+      {/* Product Info */}
       <div className="p-4">
-        <Link to={`/products/${product.id}`}>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            {product.name}
-          </h3>
-        </Link>
-        <div className="flex items-center mb-2">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <StarIcon
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.round(product.rating)
-                    ? 'text-yellow-400'
-                    : 'text-gray-300'
-                }`}
-              />
-            ))}
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <Link to={`/products/${product.id}`}>
+            <span aria-hidden="true" className="absolute inset-0" />
+            {product.title}
+          </Link>
+        </h3>
+
+        {/* Price */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <p className="text-lg font-bold text-gray-900">
+              {displayPrice(product.regularPrice)}
+            </p>
           </div>
-          <span className="text-sm text-gray-600 ml-1">
-            ({product.reviews.length})
+          <span className="text-sm text-gray-500">
+            {product.quantity > 0 ? 'In Stock' : 'Out of Stock'}
           </span>
         </div>
-        <div className="flex items-center justify-between">
-          <div>
-            {product.discount ? (
-              <>
-                <span className="text-lg font-bold text-gray-900">
-                  ${discountedPrice.toFixed(2)}
-                </span>
-                <span className="text-sm text-gray-500 line-through ml-2">
-                  ${product.price.toFixed(2)}
-                </span>
-              </>
-            ) : (
-              <span className="text-lg font-bold text-gray-900">
-                ${product.price.toFixed(2)}
-              </span>
-            )}
-          </div>
+
+        <div className="mt-4">
           <button
             onClick={handleAddToCart}
             className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
-            disabled={product.stock === 0}
+            disabled={product.quantity === 0}
           >
-            {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
           </button>
         </div>
       </div>

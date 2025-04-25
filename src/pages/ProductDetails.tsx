@@ -53,10 +53,10 @@ const ProductDetails = () => {
     dispatch(
       addItem({
         id: product.id,
-        name: product.name,
-        price: product.price * (1 - product.discount / 100),
+        title: product.name,
+        regularPrice: product.price * (1 - product.discount / 100),
         quantity,
-        image: product.images[0],
+        imageUrl: product.images[0],
       })
     );
   };

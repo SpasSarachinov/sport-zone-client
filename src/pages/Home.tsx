@@ -1,6 +1,85 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import ProductCard from '../components/products/ProductCard';
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Product {
+  id: string;
+  title: string;
+  description: string;
+  regularPrice: number;
+  imageUrl: string;
+  categoryId: string;
+  
+  quantity: number;
+  rating: number;
+  reviews: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    rating: number;
+    comment: string;
+    date: string;
+  }>;
+  discount?: number;
+  discountPercentage?: number;
+}
 
 const Home = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [bestSellers, setBestSellers] = useState<Product[]>([]);
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchBestSellers();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('https://sportzone-api.onrender.com/api/Categories');
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+      const data = await response.json();
+      setCategories(data);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      setError('Failed to load categories');
+    }
+  };
+
+  const fetchBestSellers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://sportzone-api.onrender.com/api/Products/best-sellers?numOfBestSellers=3');
+      if (!response.ok) {
+        throw new Error('Failed to fetch best sellers');
+      }
+      const data = await response.json();
+      console.log('Best sellers data:', data);
+      setBestSellers(data);
+    } catch (err) {
+      console.error('Error fetching best sellers:', err);
+      setError('Failed to load best sellers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Category card images mapping
+  const categoryImages: { [key: string]: string } = {
+    'Футбол': 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800',
+    'Баскетбол': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=800',
+    'Тенис': 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=800',
+    // Add more mappings as needed
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -20,53 +99,66 @@ const Home = () => {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <h2 className="section-title">Избрани Категории</h2>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Football Category */}
-          <Link to="/products?category=football" className="category-card">
-            <img
-              src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800"
-              alt="Футболна Екипировка"
-              className="w-full"
-            />
-            <div className="category-card-content">
-              <h3 className="category-title">Футбол</h3>
-              <span className="text-sm">Разгледай Екипировка</span>
-            </div>
-          </Link>
-
-          {/* Basketball Category */}
-          <Link to="/products?category=basketball" className="category-card">
-            <img
-              src="https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=800"
-              alt="Баскетболна Екипировка"
-              className="w-full"
-            />
-            <div className="category-card-content">
-              <h3 className="category-title">Баскетбол</h3>
-              <span className="text-sm">Разгледай Екипировка</span>
-            </div>
-          </Link>
-
-          {/* Tennis Category */}
-          <Link to="/products?category=tennis" className="category-card">
-            <img
-              src="https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=800"
-              alt="Тенис Екипировка"
-              className="w-full"
-            />
-            <div className="category-card-content">
-              <h3 className="category-title">Тенис</h3>
-              <span className="text-sm">Разгледай Екипировка</span>
-            </div>
-          </Link>
+          {error ? (
+            <div className="col-span-3 text-center text-red-600">{error}</div>
+          ) : categories.length === 0 ? (
+            <div className="col-span-3 text-center">Loading categories...</div>
+          ) : (
+            categories.map((category) => (
+              <Link
+                key={category.id}
+                to={`/products?categoryId=${encodeURIComponent(category.id)}`}
+                className="category-card"
+              >
+                <img
+                  src={categoryImages[category.name] || 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=800'}
+                  alt={`${category.name} Екипировка`}
+                  className="w-full"
+                />
+                <div className="category-card-content">
+                  <h3 className="category-title">{category.name}</h3>
+                  <span className="text-sm">Разгледай Екипировка</span>
+                </div>
+              </Link>
+            ))
+          )}
         </div>
       </section>
 
       {/* Featured Products Section */}
-      <section className="featured-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="section-title">Препоръчани Продукти</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Featured products will be rendered here */}
+      <section className="featured-section py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="section-title mb-8">Препоръчани Продукти</h2>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Loading best sellers...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600">{error}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {bestSellers.map((product) => (
+                <ProductCard 
+                  key={product.id} 
+                  product={product}
+                />
+              ))}
+              {bestSellers.length === 0 && (
+                <div className="col-span-3 text-center py-12">
+                  <p className="text-gray-600">No featured products available at the moment.</p>
+                </div>
+              )}
+            </div>
+          )}
+          <div className="text-center mt-8">
+            <Link 
+              to="/products" 
+              className="px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200"
+            >
+              View All Products
+            </Link>
           </div>
         </div>
       </section>

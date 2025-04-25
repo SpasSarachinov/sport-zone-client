@@ -10,172 +10,163 @@ import {
 import ProductCard from '../components/products/ProductCard';
 import FilterSidebar from '../components/products/FilterSidebar';
 import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { Product } from '../types';
 
-// Hardcoded products data
-const hardcodedProducts = [
-  {
-    id: '1',
-    name: 'Nike Air Max 270',
-    description: 'Модерни маратонки с въздушна подложка за максимален комфорт при бягане.',
-    price: 299.99,
-    discount: 20,
-    category: 'Маратонки',
-    stock: 10,
-    rating: 4.5,
-    reviews: [
-      {
-        id: '1',
-        userId: '1',
-        userName: 'Иван Петров',
-        rating: 5,
-        comment: 'Отлични маратонки!',
-        date: '2024-02-15',
-      },
-    ],
-    image: 'https://example.com/shoe1.jpg',
-  },
-  {
-    id: '2',
-    name: 'Adidas Predator Edge',
-    description: 'Футболни кецове с подобрена контрола и точност.',
-    price: 249.99,
-    discount: 0,
-    category: 'Футболни кецове',
-    stock: 15,
-    rating: 4.8,
-    reviews: [
-      {
-        id: '2',
-        userId: '2',
-        userName: 'Георги Иванов',
-        rating: 5,
-        comment: 'Най-добрите футболни кецове!',
-        date: '2024-02-10',
-      },
-    ],
-    image: 'https://example.com/shoe2.jpg',
-  },
-  {
-    id: '3',
-    name: 'Wilson Pro Staff',
-    description: 'Тенис ракета за професионалисти.',
-    price: 199.99,
-    discount: 15,
-    category: 'Тенис',
-    stock: 8,
-    rating: 4.7,
-    reviews: [
-      {
-        id: '3',
-        userId: '3',
-        userName: 'Мария Георгиева',
-        rating: 4,
-        comment: 'Отлично качество!',
-        date: '2024-02-05',
-      },
-    ],
-    image: 'https://example.com/racket1.jpg',
-  },
-  {
-    id: '4',
-    name: 'Nike Dri-FIT',
-    description: 'Спортен тениска с технология за изсушаване на потта.',
-    price: 49.99,
-    discount: 0,
-    category: 'Спортни дрехи',
-    stock: 20,
-    rating: 4.3,
-    reviews: [
-      {
-        id: '4',
-        userId: '4',
-        userName: 'Петър Стоянов',
-        rating: 5,
-        comment: 'Много удобна тениска!',
-        date: '2024-02-01',
-      },
-    ],
-    image: 'https://example.com/tshirt1.jpg',
-  },
-];
+interface FilterState {
+  category: string | null;
+  search: string;
+  minPrice: number | null;
+  maxPrice: number | null;
+  rating: number | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useDispatch();
-  const { items, categories, selectedCategory, searchQuery } = useSelector(
+  const { items } = useSelector(
     (state: RootState) => state.products
   );
   const { user } = useSelector((state: RootState) => state.auth);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [filters, setFilters] = useState<FilterState>({
+    category: null,
+    search: '',
+    minPrice: null,
+    maxPrice: null,
+    rating: null
+  });
 
-  // Set hardcoded products on component mount
   useEffect(() => {
-    dispatch(setProducts(hardcodedProducts));
-  }, [dispatch]);
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('https://sportzone-api.onrender.com/api/Categories');
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setCategories(data);
+        } else if (data.items && Array.isArray(data.items)) {
+          setCategories(data.items);
+        } else {
+          console.error('Unexpected categories response format:', data);
+          setCategories([]);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setCategories([]);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        let url = 'https://sportzone-api.onrender.com/api/Products';
+        const params = new URLSearchParams();
+        
+        if (filters.search.trim() !== '') {
+          params.append('Title', filters.search.trim());
+        }
+        if (filters.category) {
+          params.append('CategoryId', filters.category);
+        }
+        if (filters.minPrice !== null) {
+          params.append('MinPrice', filters.minPrice.toString());
+        }
+        if (filters.maxPrice !== null) {
+          params.append('MaxPrice', filters.maxPrice.toString());
+        }
+        if (filters.rating !== null) {
+          params.append('MinRating', filters.rating.toString());
+        }
+
+        const queryString = params.toString();
+        if (queryString) {
+          url += `?${queryString}`;
+        }
+
+        console.log('Fetching products with URL:', url); 
+
+        const response = await fetch(url);
+        console.log(url);
+        
+        const data = await response.json();
+        console.log(data);
+        
+        if (data.items && Array.isArray(data.items)) {
+          setProducts(data.items);
+        } else {
+          console.error('Unexpected API response format:', data);
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setProducts([]);
+      }
+    };
+    fetchProducts();
+  }, [filters]);
 
   useEffect(() => {
     const category = searchParams.get('category');
     const search = searchParams.get('search');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const rating = searchParams.get('rating');
     
-    if (category) {
-      dispatch(setSelectedCategory(category));
-    }
-    if (search) {
-      dispatch(setSearchQuery(search));
-    }
-  }, [searchParams, dispatch]);
+    setFilters(prev => ({
+      ...prev,
+      category: category || null,
+      search: search || '',
+      minPrice: minPrice ? Number(minPrice) : null,
+      maxPrice: maxPrice ? Number(maxPrice) : null,
+      rating: rating ? Number(rating) : null
+    }));
+  }, [searchParams]);
 
-  const handleCategoryChange = (category: string | null) => {
-    setSearchParams((prev) => {
+  const handleApplyFilters = (newFilters: Partial<FilterState>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+    setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
-      if (category) {
-        newParams.set('category', category);
+      
+      if (newFilters.category) {
+        newParams.set('category', newFilters.category);
       } else {
         newParams.delete('category');
       }
-      return newParams;
-    });
-  };
-
-  const handleSearchChange = (query: string) => {
-    setSearchParams((prev) => {
-      const newParams = new URLSearchParams(prev);
-      if (query) {
-        newParams.set('search', query);
+      
+      if (newFilters.search) {
+        newParams.set('search', newFilters.search);
       } else {
         newParams.delete('search');
       }
-      return newParams;
-    });
-  };
-
-  const handlePriceRangeChange = (range: { min: number; max: number }) => {
-    setSearchParams((prev) => {
-      const newParams = new URLSearchParams(prev);
-      newParams.set('minPrice', range.min.toString());
-      newParams.set('maxPrice', range.max.toString());
-      return newParams;
-    });
-  };
-
-  const handleRatingChange = (rating: number) => {
-    setSearchParams((prev) => {
-      const newParams = new URLSearchParams(prev);
-      if (rating > 0) {
-        newParams.set('rating', rating.toString());
-      } else {
-        newParams.delete('rating');
+      
+      if (newFilters.minPrice !== undefined) {
+        newParams.set('minPrice', newFilters.minPrice?.toString() || '');
       }
+      
+      if (newFilters.maxPrice !== undefined) {
+        newParams.set('maxPrice', newFilters.maxPrice?.toString() || '');
+      }
+      
+      if (newFilters.rating !== undefined) {
+        newParams.set('rating', newFilters.rating?.toString() || '');
+      }
+      
       return newParams;
     });
   };
 
-  const filteredProducts = items.filter((product) => {
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    const matchesSearch = !searchQuery || 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const getCategoryName = (categoryId: string | null) => {
+    if (!categoryId) return null;
+    return categories.find(c => c.id === categoryId)?.name || null;
+  };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] py-12 px-4 sm:px-6 lg:px-8">
@@ -183,10 +174,10 @@ const Products = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-dark-700">
-              {selectedCategory ? `${selectedCategory} Продукти` : 'Всички продукти'}
+              {getCategoryName(filters.category) ? `${getCategoryName(filters.category)} Продукти` : 'Всички продукти'}
             </h1>
             <p className="text-dark-600 mt-2">
-              Намерени {filteredProducts.length} продукта
+              Намерени {products.length} продукта
             </p>
           </div>
           {/* Admin Panel Links - Only visible to admin users */}
@@ -213,22 +204,25 @@ const Products = () => {
         <div className="flex flex-col md:flex-row gap-8">
           <FilterSidebar
             categories={categories}
-            selectedCategory={selectedCategory}
-            onCategoryChange={handleCategoryChange}
-            searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
-            onPriceRangeChange={handlePriceRangeChange}
-            onRatingChange={handleRatingChange}
+            selectedCategory={filters.category}
+            searchQuery={filters.search}
+            onApplyFilters={handleApplyFilters}
           />
           
           <div className="flex-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {products.map((product) => (
+                <ProductCard 
+                  key={product.id} 
+                  product={{
+                    ...product,
+                    regularPrice: product.regularPrice
+                  }}
+                />
               ))}
             </div>
 
-            {filteredProducts.length === 0 && (
+            {products.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-dark-600 text-lg">
                   Няма намерени продукти, отговарящи на вашите критерии.
