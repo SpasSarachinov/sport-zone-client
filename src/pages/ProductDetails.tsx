@@ -34,6 +34,8 @@ const ProductDetails = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const dispatch = useDispatch();
   const { wishlist } = useSelector((state: RootState) => state.user);
   const { token } = useSelector((state: RootState) => state.auth);
@@ -88,9 +90,13 @@ const ProductDetails = () => {
     });
     if (isInWishlist) {
       dispatch(removeFromWishlist(product.id));
+      setToastMessage('Продуктът беше премахнат от списъка с желания');
     } else {
       dispatch(addToWishlist(product.id));
+      setToastMessage('Продуктът беше добавен в списъка с желания');
     }
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   if (loading) {
@@ -113,6 +119,14 @@ const ProductDetails = () => {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 px-4 sm:px-6 lg:px-8">
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-2 z-50 animate-fade-in">
+          <HeartIconSolid className="h-5 w-5 text-primary-600" />
+          <span className="text-gray-800">{toastMessage}</span>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Images */}

@@ -1,4 +1,4 @@
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 interface Category {
@@ -39,6 +39,20 @@ const FilterSidebar = ({
     });
   };
 
+  const handleClearFilters = () => {
+    setSearchInput('');
+    setMinPrice('');
+    setMaxPrice('');
+    setSelectedRating(0);
+    onApplyFilters({
+      category: null,
+      search: '',
+      minPrice: null,
+      maxPrice: null,
+      rating: null
+    });
+  };
+
   const handleCategoryChange = (categoryId: string | null) => {
     onApplyFilters({ category: categoryId });
   };
@@ -67,6 +81,13 @@ const FilterSidebar = ({
           className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
         >
           Търси
+        </button>
+        <button
+          onClick={handleClearFilters}
+          className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 flex items-center justify-center space-x-1"
+        >
+          <XMarkIcon className="h-5 w-5" />
+          <span>Премахни филтрите</span>
         </button>
       </div>
 

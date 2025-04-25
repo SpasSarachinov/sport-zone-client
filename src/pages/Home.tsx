@@ -91,27 +91,30 @@ const Home = () => {
 
       {/* Categories Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <h2 className="section-title">Избрани Категории</h2>
+        <h2 className="section-title">Категории</h2>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           {error ? (
             <div className="col-span-3 text-center text-red-600">{error}</div>
           ) : categories.length === 0 ? (
-            <div className="col-span-3 text-center">Loading categories...</div>
+            <div className="col-span-3 text-center">Зареждане на категории...</div>
           ) : (
             categories.map((category) => (
               <Link
                 key={category.id}
-                to={`/products?categoryId=${encodeURIComponent(category.id)}`}
-                className="category-card"
+                to={`/products?category=${encodeURIComponent(category.id)}`}
+                className="category-card group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
               >
-                <img
-                  src={category.imageURI}
-                  alt={`${category.name} Екипировка`}
-                  className="w-full"
-                />
-                <div className="category-card-content">
-                  <h3 className="category-title">{category.name}</h3>
-                  <span className="text-sm">Разгледай Екипировка</span>
+                <div className="aspect-w-16 aspect-h-9">
+                  <img
+                    src={category.imageURI}
+                    alt={`${category.name} Екипировка`}
+                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
+                  <div className="p-4 w-full">
+                    <h3 className="text-xl font-semibold text-white">{category.name}</h3>
+                  </div>
                 </div>
               </Link>
             ))
