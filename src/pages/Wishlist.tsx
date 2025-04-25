@@ -94,8 +94,8 @@ const Wishlist = () => {
       <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4">
         <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
           <HeartIcon className="h-16 w-16 text-primary-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Вашият списък с желания е празен</h2>
-          <p className="text-gray-600 mb-6">Добавете продукти, които харесвате, в списъка с желания</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Вашият списък с Любими продукти е празен</h2>
+          <p className="text-gray-600 mb-6">Добавете продукти, които харесвате, в списъка с Любими продукти</p>
           <Link
             to="/products"
             className="inline-flex items-center justify-center bg-primary-500 text-white px-6 py-3 rounded-md hover:bg-primary-600 transition-colors"

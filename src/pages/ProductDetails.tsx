@@ -251,21 +251,12 @@ const ProductDetails = () => {
         throw new Error('Failed to submit review');
       }
 
-      // Fetch updated reviews
-      const reviewsResponse = await fetch(`https://sportzone-api.onrender.com/api/Reviews`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-
-      });
-      const updatedReviews = await reviewsResponse.json();
-      setReviews(updatedReviews);
-
       // Reset the form
       setNewReviewRating(0);
       setNewReviewComment('');
+      
+      // Fetch updated reviews using the existing function
+      await fetchReviews();
       
       toast.success('Благодарим за вашия отзив!', {
         position: "bottom-right",
@@ -292,27 +283,61 @@ const ProductDetails = () => {
   };
 
   const handleDeleteReview = async (reviewId: string) => {
-    try {
-      const response = await fetch(`https://sportzone-api.onrender.com/api/Reviews/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          token: token
-        })
-      });
+    const DeleteConfirmationToast = () => (
+      <div className="p-4">
+        <p className="text-gray-700 mb-4">Сигурни ли сте, че искате да изтриете този отзив?</p>
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={() => {
+              toast.dismiss();
+              deleteReview(reviewId);
+            }}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+          >
+            Да, изтрий
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+          >
+            Отказ
+          </button>
+        </div>
+      </div>
+    );
 
-      if (!response.ok) {
-        throw new Error('Failed to delete review');
+    const deleteReview = async (id: string) => {
+      try {
+        const response = await fetch(`https://sportzone-api.onrender.com/api/Reviews/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            token: token
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete review');
+        }
+
+        toast.success('Отзивът беше изтрит успешно');
+        fetchReviews(); // Refresh the reviews list
+      } catch (error) {
+        toast.error('Възникна грешка при изтриването на отзива');
       }
+    };
 
-      toast.success('Отзивът беше изтрит успешно');
-      fetchReviews(); // Refresh the reviews list
-    } catch (error) {
-      toast.error('Възникна грешка при изтриването на отзива');
-    }
+    toast(<DeleteConfirmationToast />, {
+      position: "bottom-right",
+      autoClose: false,
+      closeOnClick: false,
+      draggable: true,
+      closeButton: false,
+      className: "w-80"
+    });
   };
 
   const handleEditReview = async (reviewId: string) => {
@@ -324,6 +349,7 @@ const ProductDetails = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          id: reviewId,
           content: editContent,
           rating: editRating,
         })
@@ -604,7 +630,7 @@ const ProductDetails = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Коментар
                   </label>
-                  <div className="relative">
+                  <div className="relative border rounded-md">
                     <ReactQuill
                       value={newReviewComment}
                       onChange={setNewReviewComment}
@@ -696,13 +722,13 @@ const ProductDetails = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Коментар
                             </label>
-                            <div className="border rounded-md">
+                            <div className="relative border rounded-md">
                               <ReactQuill
                                 value={editContent}
                                 onChange={setEditContent}
                                 modules={quillModules}
                                 formats={quillFormats}
-                                className="h-40"
+                                className="quill"
                                 theme="snow"
                               />
                             </div>
@@ -757,11 +783,7 @@ const ProductDetails = () => {
                                   <PencilIcon className="h-5 w-5" />
                                 </button>
                                 <button
-                                  onClick={() => {
-                                    if (window.confirm('Сигурни ли сте, че искате да изтриете този отзив?')) {
-                                      handleDeleteReview(review.id);
-                                    }
-                                  }}
+                                  onClick={() => handleDeleteReview(review.id)}
                                   className="text-red-600 hover:text-red-700 p-1"
                                   title="Изтрий"
                                 >

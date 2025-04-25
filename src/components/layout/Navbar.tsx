@@ -88,7 +88,7 @@ const Navbar = () => {
                     to="/wishlist"
                     className="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                   >
-                    Желани
+                    Любими
                   </Link>
                   {isAdmin && (
                     <Link
@@ -208,7 +208,7 @@ const Navbar = () => {
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Желани
+                Любими
               </Link>
               {isAdmin && (
                 <Link
