@@ -15,6 +15,8 @@ import Wishlist from './pages/Wishlist';
 import PrivateRoute from './routes/PrivateRoute';
 import NotFound from './pages/NotFound';
 import Home from './pages/Home';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
@@ -42,6 +44,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
+      <ToastContainer />
     </Provider>
   );
 }

@@ -40,9 +40,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   return (
-    <div className="group relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-      {/* Product Image */}
-      <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-200">
+    <div className="relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 h-[400px]">
+      {/* Product Image - Fixed height */}
+      <div className="h-48 w-full overflow-hidden bg-gray-200">
         <img
           src={product.imageUrl || '/placeholder-image.jpg'}
           alt={product.title}
@@ -50,18 +50,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         />
       </div>
 
-      {/* Product Info */}
-      <div className="p-4 flex flex-col flex-grow">
-        <div className="flex-grow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+      {/* Product Info - Absolute positioning for consistent layout */}
+      <div className="p-4 h-[calc(400px-192px)] relative">
+        {/* Title - Fixed height with ellipsis */}
+        <div className="h-12 overflow-hidden">
+          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
             <Link to={`/products/${product.id}`}>
               <span aria-hidden="true" className="absolute inset-0" />
               {product.title}
             </Link>
           </h3>
+        </div>
 
-          {/* Rating */}
-          <div className="flex items-center mb-2">
+        {/* Rating - Fixed position */}
+        <div className="absolute top-20 left-4">
+          <div className="flex items-center">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <StarIcon
@@ -78,31 +81,41 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               ({product.rating?.toFixed(1) || '0.0'})
             </span>
           </div>
+        </div>
 
+        {/* Bottom Section with Price, Availability, and Button */}
+        <div className="absolute bottom-4 left-4 right-4">
           {/* Price and Availability */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <p className="text-lg font-bold text-gray-900">
               {displayPrice(product.regularPrice)}
             </p>
-            <span className={`text-sm ${product.quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {product.quantity > 0 ? 'В наличност' : 'Няма в наличност'}
-            </span>
+            <div className="flex items-center">
+              <div className={`h-2 w-2 rounded-full mr-2 ${
+                product.quantity > 0 ? 'bg-green-500' : 'bg-red-500'
+              }`}></div>
+              <span className={`text-sm ${
+                product.quantity > 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {product.quantity > 0 ? 'В наличност' : 'Няма в наличност'}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Add to Cart Button */}
-        <button
-          onClick={handleAddToCart}
-          className={`w-full flex items-center justify-center px-4 py-2 rounded-md ${
-            product.quantity === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-primary-600 text-white hover:bg-primary-700'
-          }`}
-          disabled={product.quantity === 0}
-        >
-          <ShoppingCartIcon className="h-5 w-5 mr-2" />
-          {product.quantity === 0 ? 'Няма в наличност' : 'Добави в количка'}
-        </button>
+          {/* Add to Cart Button */}
+          <button
+            onClick={handleAddToCart}
+            className={`w-full h-12 flex items-center justify-center px-4 py-2 rounded-md ${
+              product.quantity === 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-primary-600 text-white hover:bg-primary-700'
+            }`}
+            disabled={product.quantity === 0}
+          >
+            <ShoppingCartIcon className="h-5 w-5 mr-2" />
+            {product.quantity === 0 ? 'Няма в наличност' : 'Добави в количка'}
+          </button>
+        </div>
       </div>
     </div>
   );
