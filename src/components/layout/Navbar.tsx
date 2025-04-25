@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { logout, setUser } from '../../store/slices/authSlice';
-import { ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { ShoppingCartIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { decodeJWT } from '../../utils/jwtUtils';
 
 interface User {
@@ -15,6 +15,7 @@ interface User {
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -62,6 +63,10 @@ const Navbar = () => {
     };
   }, []);
 
+  const handleMobileMenuClick = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,13 +102,44 @@ const Navbar = () => {
               )}
             </div>
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <Link
-              to="/cart"
-              className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+
+          {/* Mobile menu button */}
+          <div className="flex items-center sm:hidden">
+            <button
+              onClick={handleMobileMenuClick}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
             >
-              <ShoppingCartIcon className="h-6 w-6" />
-            </Link>
+              <span className="sr-only">Open main menu</span>
+              {isMobileMenuOpen ? (
+                <XMarkIcon className="block h-6 w-6" />
+              ) : (
+                <svg
+                  className="block h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
+
+          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            <div className="ml-auto mr-4">
+            </div>
+            <Link
+                to="/cart"
+                className="inline-flex items-center justify-center mr-3 p-2 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <ShoppingCartIcon className="h-6 w-6" />
+              </Link>
             {isAuthenticated ? (
               <div className="ml-3 relative" ref={dropdownRef}>
                 <button
@@ -119,13 +155,13 @@ const Navbar = () => {
                 </button>
                 {isOpen && (
                   <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50">
-                    <Link
+                    {/*<Link
                       to="/profile"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsOpen(false)}
                     >
                       Профил
-                    </Link>
+                    </Link>*/}
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -152,6 +188,92 @@ const Navbar = () => {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      <div className={`sm:hidden ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
+        <div className="pt-2 pb-3 space-y-1">
+          <Link
+            to="/products"
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Продукти
+          </Link>
+          {isAuthenticated && (
+            <>
+              <Link
+                to="/wishlist"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Желани
+              </Link>
+              {isAdmin && (
+                <Link
+                  to="/admin/products"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Админ панел
+                </Link>
+              )}
+              <Link
+                to="/cart"
+                className="inline-flex items-center justify-center ml-5 p-2 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <ShoppingCartIcon className="h-6 w-6" />
+              </Link>
+            </> 
+          )}
+        </div>
+        <div className="pt-4 pb-3 border-t border-gray-200">
+          {isAuthenticated ? (
+            <div className="flex items-center px-5">
+              <div className="flex-shrink-0">
+                <img
+                  src="https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small_2x/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg"
+                  alt="Profile"
+                  className="h-10 w-10 rounded-full"
+                />
+              </div>
+              <div className="ml-3">
+                <div className="text-base font-medium text-gray-800">{user?.name}</div>
+                <div className="text-sm font-medium text-gray-500">{user?.email}</div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <Link
+                to="/login"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Вход
+              </Link>
+              <Link
+                to="/register"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Регистрация
+              </Link>
+            </div>
+          )}
+          {isAuthenticated && (
+            <div className="mt-3 space-y-1">
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              >
+                Изход
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

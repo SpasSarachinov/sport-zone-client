@@ -71,6 +71,26 @@ const FilterSidebar = ({
       </div>
 
       <div className="space-y-4">
+        <h3 className="font-medium text-dark-700">Ценови диапазон</h3>
+        <div className="flex space-x-4">
+          <input
+            type="number"
+            placeholder="От"
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
+            className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+          <input
+            type="number"
+            placeholder="До"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+            className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+        </div>
+      </div>
+      
+      <div className="space-y-4">
         <h3 className="font-medium text-dark-700">Категории</h3>
         <div className="space-y-2">
           <button
@@ -99,25 +119,7 @@ const FilterSidebar = ({
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h3 className="font-medium text-dark-700">Ценови диапазон</h3>
-        <div className="flex space-x-4">
-          <input
-            type="number"
-            placeholder="От"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-            className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-          <input
-            type="number"
-            placeholder="До"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-            className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-      </div>
+      
 
       <div className="space-y-4">
         <h3 className="font-medium text-dark-700">Рейтинг</h3>

@@ -1,14 +1,25 @@
-export interface Product {
+export interface Category {
   id: string;
   name: string;
-  price: number;
+}
+
+export interface Product {
+  id: string;
+  title: string;
   description: string;
-  category: string;
-  image: string;
-  rating: number;
-  discount?: number;
-  stock: number;
-  reviews: Review[];
+  imageUrl: string;
+  regularPrice: number;
+  quantity: number;
+  categoryId: string;
+  rating?: number;
+  reviews?: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    rating: number;
+    comment: string;
+    date: string;
+  }>;
 }
 
 export interface Review {

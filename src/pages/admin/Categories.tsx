@@ -7,10 +7,17 @@ interface Category {
   id: string;
   name: string;
   productCount: number;
+  imageURI: string;
+}
+
+interface FormData {
+  name: string;
+  imageURI: string;
 }
 
 interface ValidationErrors {
   name?: string;
+  imageURI?: string;
 }
 
 const AdminCategories = () => {
@@ -19,7 +26,10 @@ const AdminCategories = () => {
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState({ name: '' });
+  const [formData, setFormData] = useState<FormData>({ 
+    name: '',
+    imageURI: ''
+  });
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const { token } = useSelector((state: RootState) => state.auth);
@@ -65,15 +75,33 @@ const AdminCategories = () => {
       errors.name = 'Категория с това име вече съществува';
     }
 
+    // Image URL validation
+    if (!formData.imageURI.trim()) {
+      errors.imageURI = 'URL на изображението е задължително';
+    } else {
+      try {
+        new URL(formData.imageURI);
+      } catch {
+        errors.imageURI = 'Моля, въведете валиден URL адрес';
+      }
+    }
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ name: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
     // Clear validation error when user starts typing
-    if (validationErrors.name) {
-      setValidationErrors({});
+    if (validationErrors[name as keyof ValidationErrors]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
     }
   };
 
@@ -87,7 +115,6 @@ const AdminCategories = () => {
 
     try {
       const url = `https://sportzone-api.onrender.com/api/Categories/`
-  
       
       const response = await fetch(url, {
         method: editingCategory ? "PUT" : "POST",
@@ -95,14 +122,13 @@ const AdminCategories = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(editingCategory ? {
-          id: editingCategory.id,
+        body: JSON.stringify({
+          id: editingCategory?.id,
           name: formData.name,
-          productCount: editingCategory.productCount
-        } : {
-          name: formData.name
+          imageURI: formData.imageURI
         })
       });
+        
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
@@ -111,7 +137,7 @@ const AdminCategories = () => {
 
       await fetchCategories();
       setIsModalOpen(false);
-      setFormData({ name: '' });
+      setFormData({ name: '', imageURI: '' });
       setEditingCategory(null);
     } catch (err) {
       console.error('Грешка при запазване на категория:', err);
@@ -121,7 +147,7 @@ const AdminCategories = () => {
 
   const handleAddCategory = () => {
     setEditingCategory(null);
-    setFormData({ name: '' });
+    setFormData({ name: '', imageURI: '' });
     setError('');
     setValidationErrors({});
     setIsModalOpen(true);
@@ -129,7 +155,10 @@ const AdminCategories = () => {
 
   const handleEditCategory = (category: Category) => {
     setEditingCategory(category);
-    setFormData({ name: category.name });
+    setFormData({ 
+      name: category.name,
+      imageURI: category.imageURI || ''
+    });
     setError('');
     setValidationErrors({});
     setIsModalOpen(true);
@@ -253,13 +282,32 @@ const AdminCategories = () => {
                   <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
                 )}
               </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  URL на изображение
+                </label>
+                <input
+                  type="url"
+                  name="imageURI"
+                  value={formData.imageURI}
+                  onChange={handleInputChange}
+                  className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 ${
+                    validationErrors.imageURI ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                />
+                {validationErrors.imageURI && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.imageURI}</p>
+                )}
+              </div>
+
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => {
                     setIsModalOpen(false);
                     setEditingCategory(null);
-                    setFormData({ name: '' });
+                    setFormData({ name: '', imageURI: '' });
                     setValidationErrors({});
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"

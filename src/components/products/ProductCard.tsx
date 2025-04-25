@@ -35,7 +35,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const displayPrice = (price: number | undefined) => {
     if (price === undefined) return '0.00';
-    return price.toFixed(2);
+    return price.toFixed(2) + ' лв.';
   };
 
   return (
@@ -66,7 +66,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </p>
           </div>
           <span className="text-sm text-gray-500">
-            {product.quantity > 0 ? 'In Stock' : 'Out of Stock'}
+            {product.quantity > 0 ? 'В наличност' : 'Няма в наличност'}
           </span>
         </div>
 
@@ -76,7 +76,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
             disabled={product.quantity === 0}
           >
-            {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+            {product.quantity === 0 ? 'Няма в наличност' : 'Добави в количка'}
           </button>
         </div>
       </div>

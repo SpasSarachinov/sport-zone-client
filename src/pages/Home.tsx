@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import ProductCard from '../components/products/ProductCard';
 
 interface Category {
+  imageURI: string | undefined;
   id: string;
   name: string;
 }
@@ -72,13 +73,6 @@ const Home = () => {
     }
   };
 
-  // Category card images mapping
-  const categoryImages: { [key: string]: string } = {
-    'Футбол': 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800',
-    'Баскетбол': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=800',
-    'Тенис': 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=800',
-    // Add more mappings as needed
-  };
 
   return (
     <div className="min-h-screen">
@@ -111,7 +105,7 @@ const Home = () => {
                 className="category-card"
               >
                 <img
-                  src={categoryImages[category.name] || 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=800'}
+                  src={category.imageURI}
                   alt={`${category.name} Екипировка`}
                   className="w-full"
                 />
@@ -157,7 +151,7 @@ const Home = () => {
               to="/products" 
               className="px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200"
             >
-              View All Products
+              Преглед на всички продукти
             </Link>
           </div>
         </div>

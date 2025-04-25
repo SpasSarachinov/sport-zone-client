@@ -18,7 +18,7 @@ interface Product {
   title: string;
   description: string;
   categoryId: string;
-  price: number;
+  regularPrice: number;
   quantity: number;
   imageUrl: string;
   rating: number;
@@ -30,24 +30,28 @@ interface Product {
     comment: string;
     date: string;
   }>;
+  mainImageUrl: string;
+  secondaryImageUrls: string[];
 }
 
 interface FormData {
   name: string;
   description: string;
   categoryId: string;
-  price: string;
+  regularPrice: string;
   stock: string;
-  imageUrl: string;
+  mainImageUrl: string;
+  secondaryImageUrls: string[];
 }
 
 interface ValidationErrors {
   name?: string;
   description?: string;
   categoryId?: string;
-  price?: string;
+  regularPrice?: string;
   stock?: string;
-  imageUrl?: string;
+  mainImageUrl?: string;
+  secondaryImageUrls?: string[];
 }
 
 const AdminProducts = () => {
@@ -60,9 +64,10 @@ const AdminProducts = () => {
     name: '',
     description: '',
     categoryId: '',
-    price: '',
+    regularPrice: '',
     stock: '',
-    imageUrl: '',
+    mainImageUrl: '',
+    secondaryImageUrls: ['']
   });
   const [error, setError] = useState('');
   const { token } = useSelector((state: RootState) => state.auth);
@@ -140,6 +145,29 @@ const AdminProducts = () => {
     }));
   };
 
+  const handleSecondaryImageChange = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      secondaryImageUrls: prev.secondaryImageUrls.map((url, i) => 
+        i === index ? value : url
+      )
+    }));
+  };
+
+  const addSecondaryImageField = () => {
+    setFormData(prev => ({
+      ...prev,
+      secondaryImageUrls: [...prev.secondaryImageUrls, '']
+    }));
+  };
+
+  const removeSecondaryImageField = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      secondaryImageUrls: prev.secondaryImageUrls.filter((_, i) => i !== index)
+    }));
+  };
+
   const validateForm = (): boolean => {
     const errors: ValidationErrors = {};
     
@@ -165,15 +193,15 @@ const AdminProducts = () => {
     }
 
     // Price validation
-    const priceNum = parseFloat(formData.price);
-    if (!formData.price) {
-      errors.price = 'Цената е задължителна';
-    } else if (isNaN(priceNum)) {
-      errors.price = 'Моля, въведете валидна цена';
-    } else if (priceNum < 0) {
-      errors.price = 'Цената не може да бъде отрицателна';
-    } else if (priceNum > 100000) {
-      errors.price = 'Цената не може да надвишава 100,000';
+    const regularPriceNum = parseFloat(formData.regularPrice);
+    if (!formData.regularPrice) {
+      errors.regularPrice = 'Цената е задължителна';
+    } else if (isNaN(regularPriceNum)) {
+      errors.regularPrice = 'Моля, въведете валидна цена';
+    } else if (regularPriceNum < 0) {
+      errors.regularPrice = 'Цената не може да бъде отрицателна';
+    } else if (regularPriceNum > 100000) {
+      errors.regularPrice = 'Цената не може да надвишава 100,000';
     }
 
     // Stock validation
@@ -188,16 +216,30 @@ const AdminProducts = () => {
       errors.stock = 'Количеството не може да надвишава 10,000';
     }
 
-    // Image URL validation
-    if (!formData.imageUrl.trim()) {
-      errors.imageUrl = 'URL на изображението е задължително';
+    // Main image validation
+    if (!formData.mainImageUrl.trim()) {
+      errors.mainImageUrl = 'Основното изображение е задължително';
     } else {
       try {
-        new URL(formData.imageUrl);
+        new URL(formData.mainImageUrl);
       } catch {
-        errors.imageUrl = 'Моля, въведете валиден URL адрес';
+        errors.mainImageUrl = 'Моля, въведете валиден URL адрес';
       }
     }
+
+    // Secondary images validation
+    formData.secondaryImageUrls.forEach((url, index) => {
+      if (url.trim()) {
+        try {
+          new URL(url);
+        } catch {
+          if (!errors.secondaryImageUrls) {
+            errors.secondaryImageUrls = [];
+          }
+          errors.secondaryImageUrls[index] = 'Моля, въведете валиден URL адрес';
+        }
+      }
+    });
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -216,8 +258,9 @@ const AdminProducts = () => {
         id: editingProduct?.id,
         title: formData.name,
         description: formData.description,
-        imageUrl: formData.imageUrl,
-        price: parseFloat(formData.price) || 0,
+        mainImageUrl: formData.mainImageUrl,
+        secondaryImageUrls: formData.secondaryImageUrls.filter(url => url.trim()),
+        regularPrice: parseFloat(formData.regularPrice) || 0,
         quantity: parseInt(formData.stock) || 0,
         categoryId: formData.categoryId
       };
@@ -244,9 +287,10 @@ const AdminProducts = () => {
         name: '',
         description: '',
         categoryId: '',
-        price: '',
+        regularPrice: '',
         stock: '',
-        imageUrl: '',
+        mainImageUrl: '',
+        secondaryImageUrls: ['']
       });
       setValidationErrors({});
       setEditingProduct(null);
@@ -262,9 +306,10 @@ const AdminProducts = () => {
       name: '',
       description: '',
       categoryId: '',
-      price: '',
+      regularPrice: '',
       stock: '',
-      imageUrl: '',
+      mainImageUrl: '',
+      secondaryImageUrls: ['']
     });
     setError('');
     setIsModalOpen(true);
@@ -276,9 +321,10 @@ const AdminProducts = () => {
       name: product.title || '',
       description: product.description || '',
       categoryId: product.categoryId || '',
-      price: (product.price || 0).toString(),
+      regularPrice: (product.regularPrice || 0).toString(),
       stock: (product.quantity || 0).toString(),
-      imageUrl: product.imageUrl || '',
+      mainImageUrl: product.mainImageUrl || '',
+      secondaryImageUrls: product.secondaryImageUrls || ['']
     });
     setError('');
     setIsModalOpen(true);
@@ -364,7 +410,12 @@ const AdminProducts = () => {
                   {categories.find(c => c.id === product.categoryId)?.name || 'Неизвестна категория'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {(product.price || 0).toFixed(2)} лв.
+                  {new Intl.NumberFormat('bg-BG', { 
+                    style: 'currency', 
+                    currency: 'BGN',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }).format(product.regularPrice || 0)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {product.quantity || 0}
@@ -459,17 +510,17 @@ const AdminProducts = () => {
                     Цена
                   </label>
                   <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
+                    type="string"
+                    name="regularPrice"
+                    value={formData.regularPrice}
                     onChange={handleInputChange}
-                    step="0.01"
+                    min="0"
                     className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 ${
-                      validationErrors.price ? 'border-red-300' : 'border-gray-300'
+                      validationErrors.regularPrice ? 'border-red-300' : 'border-gray-300'
                     }`}
                   />
-                  {validationErrors.price && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.price}</p>
+                  {validationErrors.regularPrice && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.regularPrice}</p>
                   )}
                 </div>
                 <div>
@@ -477,7 +528,7 @@ const AdminProducts = () => {
                     Наличност
                   </label>
                   <input
-                    type="number"
+                    type="string"
                     name="stock"
                     value={formData.stock}
                     onChange={handleInputChange}
@@ -491,19 +542,58 @@ const AdminProducts = () => {
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    URL на изображение
+                    URL на основно изображение
                   </label>
                   <input
                     type="url"
-                    name="imageUrl"
-                    value={formData.imageUrl}
+                    name="mainImageUrl"
+                    value={formData.mainImageUrl}
                     onChange={handleInputChange}
                     className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 ${
-                      validationErrors.imageUrl ? 'border-red-300' : 'border-gray-300'
+                      validationErrors.mainImageUrl ? 'border-red-300' : 'border-gray-300'
                     }`}
                   />
-                  {validationErrors.imageUrl && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.imageUrl}</p>
+                  {validationErrors.mainImageUrl && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.mainImageUrl}</p>
+                  )}
+                </div>
+                <div className="col-span-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      URL на допълнителни изображения
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addSecondaryImageField}
+                      className="text-sm text-white bg-primary-600 hover:bg-primary-700"
+                    >
+                      + Добави изображение
+                    </button>
+                  </div>
+                  {formData.secondaryImageUrls.map((url, index) => (
+                    <div key={index} className="flex gap-2 mb-2">
+                      <input
+                        type="url"
+                        value={url}
+                        onChange={(e) => handleSecondaryImageChange(index, e.target.value)}
+                        placeholder="URL на допълнително изображение"
+                        className={`flex-1 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 ${
+                          validationErrors.secondaryImageUrls?.[index] ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                      />
+                      {formData.secondaryImageUrls.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeSecondaryImageField(index)}
+                          className="text-white bg-red-600 hover:bg-red-700"
+                        >
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {validationErrors.secondaryImageUrls?.some(error => error) && (
+                    <p className="mt-1 text-sm text-red-600">Моля, въведете валидни URL адреси</p>
                   )}
                 </div>
               </div>
@@ -518,9 +608,10 @@ const AdminProducts = () => {
                       name: '',
                       description: '',
                       categoryId: '',
-                      price: '',
+                      regularPrice: '',
                       stock: '',
-                      imageUrl: '',
+                      mainImageUrl: '',
+                      secondaryImageUrls: ['']
                     });
                     setValidationErrors({});
                   }}

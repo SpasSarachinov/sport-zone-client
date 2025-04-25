@@ -4,15 +4,15 @@ const Footer = () => {
   return (
     <footer className="bg-secondary-900 text-white pt-12 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center justify-items-center">
+          <div className="text-center">
             <h3 className="text-lg font-semibold mb-4">За SportZone</h3>
             <p className="text-secondary-300">
               Вашият надежден партньор за качествена спортна екипировка и аксесоари.
             </p>
           </div>
 
-          <div>
+          <div className="text-center">
             <h3 className="text-lg font-semibold mb-4">Бързи Връзки</h3>
             <ul className="space-y-2">
               <li>
@@ -28,7 +28,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div>
+          <div className="text-center">
             <h3 className="text-lg font-semibold mb-4">Контакти</h3>
             <ul className="space-y-2 text-secondary-300">
               <li>Телефон: +359 888 123 456</li>

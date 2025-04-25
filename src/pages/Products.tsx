@@ -2,11 +2,6 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
-import {
-  setProducts,
-  setSelectedCategory,
-  setSearchQuery,
-} from '../store/slices/productsSlice';
 import ProductCard from '../components/products/ProductCard';
 import FilterSidebar from '../components/products/FilterSidebar';
 import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
@@ -27,10 +22,6 @@ interface Category {
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const dispatch = useDispatch();
-  const { items } = useSelector(
-    (state: RootState) => state.products
-  );
   const { user } = useSelector((state: RootState) => state.auth);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -87,6 +78,7 @@ const Products = () => {
         }
 
         const queryString = params.toString();
+        console.log(queryString);
         if (queryString) {
           url += `?${queryString}`;
         }
@@ -173,10 +165,10 @@ const Products = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-dark-700">
+            <h1 className="text-3xl font-bold text-black">
               {getCategoryName(filters.category) ? `${getCategoryName(filters.category)} Продукти` : 'Всички продукти'}
             </h1>
-            <p className="text-dark-600 mt-2">
+            <p className="text-black mt-2">
               Намерени {products.length} продукта
             </p>
           </div>
