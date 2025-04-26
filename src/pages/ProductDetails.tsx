@@ -177,6 +177,10 @@ const ProductDetails = () => {
 
       const data = await response.json();
       setReviews(data.items);
+      const newAverageRating = calculateAverageRating(data.items);
+      setProduct((prev) =>
+        prev ? { ...prev, rating: newAverageRating } : prev
+      );
       // Calculate total pages
       setTotalPages(Math.ceil(data.totalCount / pageSize));
     } catch (error) {
@@ -190,7 +194,24 @@ const ProductDetails = () => {
   }, [product, pageNumber, pageSize, sortBy, sortDescending]);
 
   const handleAddToCart = async () => {
-    if (!product || !token) return;
+    if (!token) {
+      toast.error(
+        "Моля, влезте в акаунта си, за да добавите продукт в количката.",
+        {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
+      return;
+    }
+
+    if (!product) return;
 
     try {
       const response = await fetch(
@@ -452,13 +473,12 @@ const ProductDetails = () => {
     );
   }
 
-
   const calculateAverageRating = (reviews: ReviewItem[]): number => {
     if (reviews.length === 0) return 0;
     const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
     return sum / reviews.length;
   };
-  
+
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 px-4 sm:px-6 lg:px-8">
       <ToastContainer />

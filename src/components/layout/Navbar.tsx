@@ -164,12 +164,14 @@ const Navbar = () => {
 
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <div className="ml-auto mr-4"></div>
-            <Link
-              to="/cart"
-              className="inline-flex items-center justify-center mr-3 p-2 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <ShoppingCartIcon className="h-6 w-6" />
-            </Link>
+            {isAuthenticated && (
+              <Link
+                to="/cart"
+                className="inline-flex items-center justify-center mr-3 p-2 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <ShoppingCartIcon className="h-6 w-6" />
+              </Link>
+            )}
             {isAuthenticated ? (
               <div className="ml-3 relative" ref={dropdownRef}>
                 <button
@@ -251,9 +253,10 @@ const Navbar = () => {
               )}
               <Link
                 to="/cart"
-                className="inline-flex items-center justify-center ml-5 p-2 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
-                <ShoppingCartIcon className="h-6 w-6" />
+                Количка
               </Link>
             </>
           )}

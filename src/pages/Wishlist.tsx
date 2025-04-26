@@ -162,9 +162,6 @@ const Wishlist = () => {
                     {product.title}
                   </Link>
                 </h3>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                  {product.description}
-                </p>
 
                 <div className="flex items-center justify-between mb-4">
                   <div className="space-y-1">

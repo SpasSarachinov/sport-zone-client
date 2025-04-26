@@ -1,70 +1,116 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setUser, setToken } from '../../store/slices/authSlice';
-import { decodeJWT } from '../../utils/jwtUtils';
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUser, setToken } from "../../store/slices/authSlice";
+import { decodeJWT } from "../../utils/jwtUtils";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(true);
+  useEffect(() => {
+    if (error) {
+      setShowErrorMessage(true);
+      const hideTimer = setTimeout(() => {
+        setShowErrorMessage(false);
+      }, 4000);
+      const clearTimer = setTimeout(() => {
+        setError("");
+      }, 5000);
+
+      return () => {
+        clearTimeout(hideTimer);
+        clearTimeout(clearTimer);
+      };
+    }
+  }, [error]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const successMessage = location.state?.message;
+  const [localSuccessMessage, setLocalSuccessMessage] = useState(
+    successMessage || ""
+  );
+  const [showSuccessMessage, setShowSuccessMessage] = useState(true);
+
+  useEffect(() => {
+    if (localSuccessMessage) {
+      setShowSuccessMessage(true);
+      const hideTimer = setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 4000); // start fade out at 4 seconds
+      const clearTimer = setTimeout(() => {
+        setLocalSuccessMessage("");
+      }, 5000); // remove after 5 seconds
+
+      return () => {
+        clearTimeout(hideTimer);
+        clearTimeout(clearTimer);
+      };
+    }
+  }, [localSuccessMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     try {
-      console.log('Attempting login with:', { email, password: '***' });
-      
-      const response = await fetch('https://sportzone-api.onrender.com/api/Auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "https://sportzone-api.onrender.com/api/Auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
-      const data = await response.json();
-      console.log('Server response:', { status: response.status, data });
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        setError("Неуспешен опит за вход");
+        return;
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || data.title || 'Грешка при влизане');
+        throw new Error("Неуспешен опит за вход");
       }
 
       if (!data.accessToken) {
-        console.error('No access token received in response:', data);
-        throw new Error('No authentication token received');
+        throw new Error("Неуспешен опит за вход");
       }
 
       // Decode the JWT token to get user information
       const decodedToken = decodeJWT(data.accessToken);
-      console.log('Login response data:', data);
-      console.log('Decoded token:', decodedToken);
-
-      const role = decodedToken?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-      console.log('Role from token:', role);
+      const role =
+        decodedToken?.[
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        ];
 
       dispatch(setToken(data.accessToken));
-      dispatch(setUser({
-        id: data.id,
-        email: data.email,
-        name: data.names,
-        role: role || 'User',
-      }));
+      dispatch(
+        setUser({
+          id: data.id,
+          email: data.email,
+          name: data.names,
+          role: role || "User",
+        })
+      );
 
       // Only redirect to admin panel if user is admin
       if (role === "Admin") {
-        navigate('/admin/products');
+        navigate("/admin/products");
       } else {
-        navigate('/');
+        navigate("/");
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err instanceof Error ? err.message : 'Грешка при влизане');
+      console.error("Login error:", err);
+      setError("Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +124,7 @@ const Login = () => {
             Вход в акаунта
           </h2>
           <p className="mt-2 text-center text-sm text-dark-700">
-            Нямате акаунт?{' '}
+            Нямате акаунт?{" "}
             <Link
               to="/register"
               className="font-medium text-primary-400 hover:text-primary-300"
@@ -88,14 +134,30 @@ const Login = () => {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {localSuccessMessage && (
+            <div
+              className={`border border-green-500 text-green-400 px-4 py-3 rounded transition-opacity duration-1000 ${
+                showSuccessMessage ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {localSuccessMessage}
+            </div>
+          )}
           {error && (
-            <div className="bg-red-900/20 border border-red-500 text-red-400 px-4 py-3 rounded">
+            <div
+              className={`border border-red-500 text-red-400 px-4 py-3 rounded transition-opacity duration-1000 ${
+                showErrorMessage ? "opacity-100" : "opacity-0"
+              }`}
+            >
               {error}
             </div>
           )}
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-dark-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-dark-700 mb-2"
+              >
                 Имейл адрес
               </label>
               <input
@@ -111,7 +173,10 @@ const Login = () => {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-dark-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-dark-700 mb-2"
+              >
                 Парола
               </label>
               <input
@@ -136,14 +201,30 @@ const Login = () => {
             >
               {isLoading ? (
                 <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Влизане...
                 </span>
               ) : (
-                'Вход'
+                "Вход"
               )}
             </button>
           </div>
@@ -153,4 +234,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

@@ -79,7 +79,7 @@ const AdminProducts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGE_SIZE_OPTIONS[0]);
-  const [sortBy, setSortBy] = useState('title');
+  const [sortBy, setSortBy] = useState("title");
   const [sortDescending, setSortDescending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<FormData>({
@@ -135,7 +135,7 @@ const AdminProducts = () => {
         PageNumber: currentPage.toString(),
         PageSize: itemsPerPage.toString(),
         SortBy: sortBy,
-        SortDescending: sortDescending.toString()
+        SortDescending: sortDescending.toString(),
       });
 
       const response = await fetch(
@@ -482,8 +482,8 @@ const AdminProducts = () => {
               </label>
               <select
                 id="sortOrder"
-                value={sortDescending ? 'desc' : 'asc'}
-                onChange={(e) => setSortDescending(e.target.value === 'desc')}
+                value={sortDescending ? "desc" : "asc"}
+                onChange={(e) => setSortDescending(e.target.value === "desc")}
                 className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               >
                 <option value="desc">Низходящо</option>
@@ -497,7 +497,9 @@ const AdminProducts = () => {
               <select
                 id="itemsPerPage"
                 value={itemsPerPage}
-                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                onChange={(e) =>
+                  handleItemsPerPageChange(Number(e.target.value))
+                }
                 className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               >
                 {PAGE_SIZE_OPTIONS.map((size) => (
@@ -507,6 +509,13 @@ const AdminProducts = () => {
                 ))}
               </select>
             </div>
+            <button
+              onClick={handleAddProduct}
+              className="flex items-center bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Добави продукт
+            </button>
           </div>
         </div>
 
@@ -551,8 +560,8 @@ const AdminProducts = () => {
                         {product.title || ""}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {categories.find((c) => c.id === product.categoryId)?.name ||
-                          "Неизвестна категория"}
+                        {categories.find((c) => c.id === product.categoryId)
+                          ?.name || "Неизвестна категория"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Intl.NumberFormat("bg-BG", {
@@ -599,11 +608,11 @@ const AdminProducts = () => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`p-2 rounded-md ${
+                className={`p-2 rounded-md text-white ${
                   currentPage === 1
-                    ? "bg-gray-200 cursor-not-allowed"
-                    : "bg-primary-500 hover:bg-primary-600"
-                } text-white`}
+                    ? "bg-gray-200 cursor-not-allowed hover:bg-gray-200" // само това, никакъв hover
+                    : "bg-primary-500 hover:bg-primary-600" // активен стил + hover
+                }`}
               >
                 <ChevronLeftIcon className="h-5 w-5" />
               </button>
@@ -615,7 +624,7 @@ const AdminProducts = () => {
                 disabled={currentPage === totalPages}
                 className={`p-2 rounded-md ${
                   currentPage === totalPages
-                    ? "bg-gray-200 cursor-not-allowed"
+                    ? "bg-gray-200 cursor-not-allowed hover:bg-gray-200"
                     : "bg-primary-500 hover:bg-primary-600"
                 } text-white`}
               >

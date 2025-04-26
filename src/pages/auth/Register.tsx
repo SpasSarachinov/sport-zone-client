@@ -34,13 +34,13 @@ const Register = () => {
     e.preventDefault();
     setError('');
 
-    if (!acceptedTerms) {
-      setError('Моля, приемете общите условия, за да продължите.');
+    if (formData.password !== formData.confirmPassword) {
+      setError('Неуспешна регистрация');
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Паролите не съвпадат.');
+    if (!acceptedTerms) {
+      setError('Неуспешна регистрация');
       return;
     }
 
@@ -54,8 +54,6 @@ const Register = () => {
         phone: formData.phone,
       };
 
-      console.log('Sending registration request with data:', requestBody);
-
       const response = await fetch('https://sportzone-api.onrender.com/api/Auth/register', {
         method: 'POST',
         headers: {
@@ -64,51 +62,28 @@ const Register = () => {
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
-      console.log('Registration response:', data);
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        setError('Неуспешна регистрация');
+        return;
+      }
 
       if (!response.ok) {
-        // Handle validation errors
-        if (data.errors) {
-          const errorMessages = Object.entries(data.errors)
-            .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
-            .join('\n');
-          throw new Error(errorMessages);
-        }
-        throw new Error(data.message || 'Грешка при регистрация');
+        setError('Неуспешна регистрация');
+        return;
       }
 
-      // After successful registration, try to login automatically
-      const loginResponse = await fetch('https://sportzone-api.onrender.com/api/Auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+      // Redirect to login page with success message
+      navigate('/login', { 
+        state: { 
+          message: 'Регистрацията е успешна! Моля, влезте с вашите данни.' 
+        } 
       });
-
-      const loginData = await loginResponse.json();
-
-      if (!loginResponse.ok) {
-        throw new Error(loginData.message || 'Успешна регистрация, но възникна грешка при автоматичното влизане');
-      }
-
-      dispatch(setToken(loginData.token));
-      dispatch(setUser({
-        id: data.id,
-        email: formData.email,
-        name: formData.names,
-        role: 'User',
-      }));
-
-      // Redirect to home page
-      navigate('/');
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err instanceof Error ? err.message : 'Грешка при регистрация');
+      setError('Неуспешна регистрация');
     } finally {
       setIsLoading(false);
     }
