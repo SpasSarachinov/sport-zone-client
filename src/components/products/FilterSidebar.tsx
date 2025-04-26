@@ -78,13 +78,13 @@ const FilterSidebar = ({
         </div>
         <button
           onClick={handleApplyAllFilters}
-          className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+          className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:text-gray-900 hover:bg-primary-700"
         >
           Търси
         </button>
         <button
           onClick={handleClearFilters}
-          className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 flex items-center justify-center space-x-1"
+          className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-primary-400 flex items-center justify-center space-x-1"
         >
           <XMarkIcon className="h-5 w-5" />
           <span>Премахни филтрите</span>
@@ -119,7 +119,7 @@ const FilterSidebar = ({
             className={`w-full text-left px-4 py-2 rounded-md ${
               !selectedCategory
                 ? 'bg-primary-100 text-primary-700'
-                : 'text-dark-600 hover:bg-gray-100'
+                : 'hover:text-gray-900 hover:bg-gray-100'
             }`}
           >
             Всички категории
@@ -130,8 +130,8 @@ const FilterSidebar = ({
               onClick={() => handleCategoryChange(category.id)}
               className={`w-full text-left px-4 py-2 rounded-md ${
                 selectedCategory === category.id
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-dark-600 hover:bg-gray-100'
+                  ? 'bg-primary-100 text-gray-900'
+                  : 'hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
               {category.name}
@@ -151,8 +151,8 @@ const FilterSidebar = ({
               onClick={() => handleRatingChange(rating)}
               className={`w-full text-left px-4 py-2 rounded-md ${
                 selectedRating === rating
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-dark-600 hover:bg-gray-100'
+                  ? 'bg-primary-100 text-gray-900'
+                  : 'hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
               {Array(rating).fill('★').join('')} и по-високо

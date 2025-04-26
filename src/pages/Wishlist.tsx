@@ -10,7 +10,7 @@ interface Product {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  primaryImageUrl: string;
   regularPrice: number;
   quantity: number;
   categoryId: string;
@@ -68,7 +68,8 @@ const Wishlist = () => {
         title: product.title,
         regularPrice: product.regularPrice * (1 - (product.discount || 0) / 100),
         quantity: 1,
-        imageUrl: product.imageUrl,
+        primaryImageUrl: product.primaryImageUrl,
+        imageUrl: ''
       })
     );
   };
@@ -98,7 +99,7 @@ const Wishlist = () => {
           <p className="text-gray-600 mb-6">Добавете продукти, които харесвате, в списъка с Любими продукти</p>
           <Link
             to="/products"
-            className="inline-flex items-center justify-center bg-primary-500 text-white px-6 py-3 rounded-md hover:bg-primary-600 transition-colors"
+            className="inline-flex items-center justify-center bg-primary-500 text-white px-6 py-3 rounded-md hover:text-gray-900 hover:bg-primary-600 transition-colors"
           >
             Разгледайте продуктите
           </Link>
@@ -121,7 +122,7 @@ const Wishlist = () => {
               <div className="relative">
                 <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-200">
                   <img
-                    src={product.imageUrl || '/placeholder-image.jpg'}
+                    src={product.primaryImageUrl || '/placeholder-image.jpg'}
                     alt={product.title}
                     className="h-full w-full object-cover object-center"
                   />

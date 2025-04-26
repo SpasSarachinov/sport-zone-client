@@ -18,7 +18,11 @@ interface Product {
   title: string;
   description: string;
   regularPrice: number;
-  imageUrl: string;
+  primaryImageUrl: string;
+  secondaryImages: Array<{
+    id: string | null;
+    uri: string;
+  }>;
   categoryId: string;
   quantity: number;
   rating: number;
@@ -55,6 +59,7 @@ interface ReviewItem {
   rating: number;
   createdOn: string;
   userId: string;
+  userNames: string;
 }
 
 // Add this function to decode JWT token and get user ID
@@ -143,7 +148,9 @@ const ProductDetails = () => {
       const queryParams = new URLSearchParams({
         ProductId: product.id,
         PageNumber: pageNumber.toString(),
-        PageSize: pageSize.toString()
+        PageSize: pageSize.toString(),
+        SortBy: sortBy,
+        SortDescending: sortDescending.toString()
       });
 
       const response = await fetch(
@@ -172,20 +179,51 @@ const ProductDetails = () => {
 
   useEffect(() => {
     fetchReviews();
-  }, [product, pageNumber, pageSize]);
+  }, [product, pageNumber, pageSize, sortBy, sortDescending]);
 
-  const handleAddToCart = () => {
-    if (!product) return;
+  const handleAddToCart = async () => {
+    if (!product || !token) return;
     
-    dispatch(
-      addItem({
-        id: product.id,
-        title: product.title,
-        regularPrice: product.regularPrice * (1 - (product.discount || 0) / 100),
-        quantity,
-        imageUrl: product.imageUrl,
-      })
-    );
+    try {
+      const response = await fetch('https://sportzone-api.onrender.com/api/Orders/', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: quantity
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add product to cart');
+      }
+
+      toast.success('Продуктът беше добавен в количката', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } catch (error) {
+      console.error('Error adding product to cart:', error);
+      toast.error('Възникна грешка при добавянето на продукта в количката', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
   };
 
   const isInWishlist = product ? wishlist.includes(product.id) : false;
@@ -245,8 +283,12 @@ const ProductDetails = () => {
           content: newReviewComment,
           rating: newReviewRating
         })
+        
       });
-
+      console.log(product.id,
+        newReviewComment,
+        newReviewRating);
+      
       if (!response.ok) {
         throw new Error('Failed to submit review');
       }
@@ -433,13 +475,78 @@ const ProductDetails = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
-            <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-100">
+            <div className="relative aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-100">
               <img
-                src={product.imageUrl}
+                src={selectedImage === 0 
+                  ? product.primaryImageUrl 
+                  : product.secondaryImages[selectedImage - 1].uri}
                 alt={product.title}
                 className="h-full w-full object-cover object-center"
               />
+              
+              {/* Navigation Arrows */}
+              <button
+                onClick={() => setSelectedImage(prev => {
+                  const totalImages = product.secondaryImages.length + 1;
+                  return (prev - 1 + totalImages) % totalImages;
+                })}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md transition-colors group border-2 border-black"
+                aria-label="Previous image"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <button
+                onClick={() => setSelectedImage(prev => {
+                  const totalImages = product.secondaryImages.length + 1;
+                  return (prev + 1) % totalImages;
+                })}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md transition-colors group border-2 border-black"
+                aria-label="Next image"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
+            
+            {/* Secondary Images Gallery */}
+            {product.secondaryImages && product.secondaryImages.length > 0 && (
+              <div className="grid grid-cols-4 gap-2">
+                {/* Primary Image Thumbnail */}
+                <div 
+                  className={`aspect-w-1 aspect-h-1 overflow-hidden rounded-lg bg-gray-100 cursor-pointer hover:opacity-75 transition-opacity ${
+                    selectedImage === 0 ? 'ring-2 ring-primary-500' : ''
+                  }`}
+                  onClick={() => setSelectedImage(0)}
+                >
+                  <img
+                    src={product.primaryImageUrl}
+                    alt={product.title}
+                    className="h-full w-full object-cover object-center"
+                  />
+                </div>
+                
+                {/* Secondary Images Thumbnails */}
+                {product.secondaryImages.map((image, index) => (
+                  <div 
+                    key={index} 
+                    className={`aspect-w-1 aspect-h-1 overflow-hidden rounded-lg bg-gray-100 cursor-pointer hover:opacity-75 transition-opacity ${
+                      selectedImage === index + 1 ? 'ring-2 ring-primary-500' : ''
+                    }`}
+                    onClick={() => setSelectedImage(index + 1)}
+                  >
+                    <img
+                      src={image.uri}
+                      alt={`${product.title} - Image ${index + 1}`}
+                      className="h-full w-full object-cover object-center"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -527,7 +634,10 @@ const ProductDetails = () => {
               </div>
             </div>
 
-            <p className="text-gray-600">{product.description}</p>
+            <div 
+              className="text-gray-600 prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
 
             {/* Quantity Selector - Only show if product is in stock */}
             {product.quantity > 0 && (
@@ -544,7 +654,7 @@ const ProductDetails = () => {
                     -
                   </button>
                   <input
-                    type="number"
+                    type="string"
                     id="quantity"
                     min="1"
                     max={product.quantity}
@@ -606,25 +716,28 @@ const ProductDetails = () => {
               <h3 className="text-lg font-semibold mb-4">Добави отзив</h3>
               <form onSubmit={handleReviewSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Рейтинг
                   </label>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-1">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         type="button"
                         onClick={() => setNewReviewRating(star)}
-                        className="focus:outline-none"
+                        className="focus:outline-none transition-transform hover:scale-110 bg-transparent p-0"
                       >
                         <StarIcon
-                          className={`w-6 h-6 ${
+                          className={`w-8 h-8 ${
                             star <= newReviewRating ? 'text-yellow-400' : 'text-gray-300'
                           }`}
                         />
                       </button>
                     ))}
                   </div>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {newReviewRating ? `${newReviewRating} ${newReviewRating === 1 ? 'звезда' : 'звезди'}` : 'Изберете рейтинг'}
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">
@@ -763,13 +876,18 @@ const ProductDetails = () => {
                                   />
                                 ))}
                               </div>
-                              <span className="text-sm text-gray-500">
-                                {new Date(review.createdOn).toLocaleDateString('bg-BG', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                })}
-                              </span>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium text-gray-900">
+                                  {review.userNames}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                  {new Date(review.createdOn).toLocaleDateString('bg-BG', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </span>
+                              </div>
                             </div>
                             
                             {/* Only show edit/delete buttons if the current user is the review creator */}
@@ -777,14 +895,14 @@ const ProductDetails = () => {
                               <div className="flex space-x-2">
                                 <button
                                   onClick={() => startEditing(review)}
-                                  className="text-primary-600 hover:text-primary-700 p-1"
+                                  className="text-white hover:text-white p-1"
                                   title="Редактирай"
                                 >
                                   <PencilIcon className="h-5 w-5" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteReview(review.id)}
-                                  className="text-red-600 hover:text-red-700 p-1"
+                                  className="text-white hover:text-white p-1"
                                   title="Изтрий"
                                 >
                                   <TrashIcon className="h-5 w-5" />
@@ -806,87 +924,55 @@ const ProductDetails = () => {
 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
-                  <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-                    <div className="flex flex-1 justify-between sm:hidden">
+                  <div className="mt-8 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setPageNumber(1)}
+                        disabled={pageNumber === 1}
+                        className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        ««
+                      </button>
                       <button
                         onClick={() => setPageNumber(prev => Math.max(1, prev - 1))}
                         disabled={pageNumber === 1}
-                        className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+                        className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Предишна
+                        «
                       </button>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      {[...Array(totalPages)].map((_, idx) => (
+                        <button
+                          key={idx + 1}
+                          onClick={() => setPageNumber(idx + 1)}
+                          className={`w-8 h-8 rounded-md text-sm font-medium transition-colors flex items-center justify-center ${
+                            pageNumber === idx + 1
+                              ? 'bg-primary-600 text-white'
+                              : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center space-x-2">
                       <button
                         onClick={() => setPageNumber(prev => Math.min(totalPages, prev + 1))}
                         disabled={pageNumber === totalPages}
-                        className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+                        className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Следваща
+                        »
                       </button>
-                    </div>
-                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-sm text-gray-700">
-                          Показване на{' '}
-                          <span className="font-medium">
-                            {((pageNumber - 1) * pageSize) + 1}
-                          </span>
-                          {' '}-{' '}
-                          <span className="font-medium">
-                            {Math.min(pageNumber * pageSize, reviews.length)}
-                          </span>
-                          {' '}от{' '}
-                          <span className="font-medium">{reviews.length}</span> отзива
-                        </p>
-                      </div>
-                      <div>
-                        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                          <button
-                            onClick={() => setPageNumber(1)}
-                            disabled={pageNumber === 1}
-                            className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:bg-gray-100"
-                          >
-                            <span className="sr-only">First</span>
-                            ««
-                          </button>
-                          <button
-                            onClick={() => setPageNumber(prev => Math.max(1, prev - 1))}
-                            disabled={pageNumber === 1}
-                            className="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:bg-gray-100"
-                          >
-                            <span className="sr-only">Previous</span>
-                            «
-                          </button>
-                          {[...Array(totalPages)].map((_, idx) => (
-                            <button
-                              key={idx + 1}
-                              onClick={() => setPageNumber(idx + 1)}
-                              className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                                pageNumber === idx + 1
-                                  ? 'z-10 bg-primary-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600'
-                                  : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'
-                              }`}
-                            >
-                              {idx + 1}
-                            </button>
-                          ))}
-                          <button
-                            onClick={() => setPageNumber(prev => Math.min(totalPages, prev + 1))}
-                            disabled={pageNumber === totalPages}
-                            className="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:bg-gray-100"
-                          >
-                            <span className="sr-only">Next</span>
-                            »
-                          </button>
-                          <button
-                            onClick={() => setPageNumber(totalPages)}
-                            disabled={pageNumber === totalPages}
-                            className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:bg-gray-100"
-                          >
-                            <span className="sr-only">Last</span>
-                            »»
-                          </button>
-                        </nav>
-                      </div>
+                      <button
+                        onClick={() => setPageNumber(totalPages)}
+                        disabled={pageNumber === totalPages}
+                        className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        »»
+                      </button>
                     </div>
                   </div>
                 )}

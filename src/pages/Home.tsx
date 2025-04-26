@@ -13,7 +13,7 @@ interface Product {
   title: string;
   description: string;
   regularPrice: number;
-  imageUrl: string;
+  primaryImageUrl: string;
   categoryId: string;
   
   quantity: number;
@@ -83,7 +83,7 @@ const Home = () => {
           <p className="hero-subtitle">
             Вашата дестинация за премиум спортна екипировка и аксесоари.
           </p>
-          <Link to="/products" className="btn btn-primary hover:text-gray-300">
+          <Link to="/products" className="btn btn-primary hover:text-gray-900">
             Пазарувай сега
           </Link>
         </div>
@@ -152,7 +152,7 @@ const Home = () => {
           <div className="text-center mt-8">
             <Link 
               to="/products" 
-              className="px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200"
+              className="px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 hover:text-gray-900 transition-colors duration-200"
             >
               Преглед на всички продукти
             </Link>

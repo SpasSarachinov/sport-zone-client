@@ -24,6 +24,12 @@ const AdminPanel = () => {
               Продукти
             </Link>
             <Link 
+              to="/admin/orders" 
+              className="block px-4 py-2 rounded hover:bg-secondary-800 transition-colors"
+            >
+              Поръчки
+            </Link>
+            <Link 
               to="/admin/categories" 
               className="block px-4 py-2 rounded hover:bg-secondary-800 transition-colors"
             >

@@ -1,14 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addItem } from '../../store/slices/cartSlice';
 import { ShoppingCartIcon, StarIcon } from '@heroicons/react/24/solid';
+import { RootState } from '../../store';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Product {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  primaryImageUrl: string;
   regularPrice: number;
   quantity: number;
   categoryId: string;
@@ -21,18 +24,70 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const dispatch = useDispatch();
+  const token = useSelector((state: RootState) => state.auth.token);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking the button
-    dispatch(
-      addItem({
-        id: product.id,
-        title: product.title,
-        regularPrice: product.regularPrice,
-        quantity: 1,
-        imageUrl: product.imageUrl,
-      })
-    );
+    
+    if (!token) {
+      toast.error('Моля, влезте в профила си за да добавите продукт в количката');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://sportzone-api.onrender.com/api/Orders', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: 1
+        })
+      });
+      
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Неуспешно добавяне на продукт в количката');
+      }
+
+      // Add item to Redux store after successful API call
+      dispatch(
+        addItem({
+          id: product.id,
+          title: product.title,
+          regularPrice: product.regularPrice,
+          quantity: 1,
+          primaryImageUrl: product.primaryImageUrl,
+          imageUrl: ''
+        })
+      );
+
+      toast.success('Продуктът беше добавен в количката', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } catch (error) {
+      console.error('Error adding product to cart:', error);
+      toast.error(error instanceof Error ? error.message : 'Възникна грешка при добавянето на продукта', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
   };
 
   const displayPrice = (price: number | undefined) => {
@@ -46,7 +101,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Product Image - Fixed height */}
         <div className="h-48 w-full overflow-hidden bg-gray-200">
           <img
-            src={product.imageUrl || '/placeholder-image.jpg'}
+            src={product.primaryImageUrl || '/placeholder-image.jpg'}
             alt={product.title}
             className="h-full w-full object-cover object-center group-hover:opacity-75 transition-opacity duration-300"
           />
@@ -102,7 +157,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              className={`w-full h-12 flex items-center justify-center px-4 py-2 rounded-md ${
+              className={`w-full h-12 flex hover:text-gray-900 items-center justify-center px-4 py-2 rounded-md ${
                 product.quantity === 0
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-primary-600 text-white hover:bg-primary-700'

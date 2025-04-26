@@ -199,7 +199,7 @@ const AdminCategories = () => {
         <h1 className="text-2xl font-bold text-gray-900">Управление на категории</h1>
         <button
           onClick={handleAddCategory}
-          className="flex items-center px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+          className="flex items-center px-4 py-2 bg-primary-500 text-white rounded-md hover:text-gray-900 hover:bg-primary-600 transition-colors"
         >
           <PlusIcon className="w-5 h-5 mr-2" />
           Добави категория
@@ -316,7 +316,7 @@ const AdminCategories = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600"
+                  className="px-4 py-2 bg-primary-500 text-white rounded-md hover:text-gray-900 hover:bg-primary-600"
                 >
                   {editingCategory ? 'Запази' : 'Добави'}
                 </button>

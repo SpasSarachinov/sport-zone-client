@@ -266,7 +266,7 @@ const AdminUsers = () => {
             });
             setIsModalOpen(true);
           }}
-          className="flex items-center px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+          className="flex items-center px-4 py-2 bg-primary-500 text-white rounded-md hover:text-gray-900 hover:bg-primary-600 transition-colors"
         >
           <PlusIcon className="w-5 h-5 mr-2" />
           Добави потребител
@@ -349,15 +349,15 @@ const AdminUsers = () => {
 
       {/* Edit/View Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
-            <h2 className="text-xl font-bold mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-white rounded-lg p-3 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
               {selectedUser ? 'Редактиране на потребител' : 'Добавяне на потребител'}
             </h2>
-            <div className="space-y-4">
-              <form onSubmit={handleUpdateUser} className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
+              <form onSubmit={handleUpdateUser} className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
                     Име
                   </label>
                   <input
@@ -365,17 +365,17 @@ const AdminUsers = () => {
                     name="names"
                     value={editFormData.names}
                     onChange={handleInputChange}
-                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 ${
+                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs sm:text-sm ${
                       validationErrors.names ? 'border-red-300' : 'border-gray-300'
                     }`}
                   />
                   {validationErrors.names && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.names}</p>
+                    <p className="mt-1 text-xs text-red-600">{validationErrors.names}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
                     Имейл
                   </label>
                   <input
@@ -383,17 +383,17 @@ const AdminUsers = () => {
                     name="email"
                     value={editFormData.email}
                     onChange={handleInputChange}
-                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 ${
+                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs sm:text-sm ${
                       validationErrors.email ? 'border-red-300' : 'border-gray-300'
                     }`}
                   />
                   {validationErrors.email && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+                    <p className="mt-1 text-xs text-red-600">{validationErrors.email}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
                     Телефон
                   </label>
                   <input
@@ -401,18 +401,18 @@ const AdminUsers = () => {
                     name="phone"
                     value={editFormData.phone}
                     onChange={handleInputChange}
-                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 ${
+                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs sm:text-sm ${
                       validationErrors.phone ? 'border-red-300' : 'border-gray-300'
                     }`}
                     placeholder="0888123456"
                   />
                   {validationErrors.phone && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
+                    <p className="mt-1 text-xs text-red-600">{validationErrors.phone}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
                     {selectedUser ? 'Нова парола (незадължително)' : 'Парола'}
                   </label>
                   <input
@@ -420,16 +420,16 @@ const AdminUsers = () => {
                     name="newPassword"
                     value={editFormData.newPassword}
                     onChange={handleInputChange}
-                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 ${
+                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs sm:text-sm ${
                       validationErrors.newPassword ? 'border-red-300' : 'border-gray-300'
                     }`}
                   />
                   {validationErrors.newPassword && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.newPassword}</p>
+                    <p className="mt-1 text-xs text-red-600">{validationErrors.newPassword}</p>
                   )}
                 </div>
 
-                <div className="flex justify-end space-x-3 mt-6">
+                <div className="flex justify-end space-x-2 sm:space-x-3 mt-4 sm:mt-6">
                   <button
                     type="button"
                     onClick={() => {
@@ -442,13 +442,13 @@ const AdminUsers = () => {
                         newPassword: '' 
                       });
                     }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-xs sm:text-sm"
                   >
                     Затвори
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary-500 text-white rounded-md hover:text-gray-900 hover:bg-primary-600 text-xs sm:text-sm"
                   >
                     {selectedUser ? 'Запази' : 'Добави'}
                   </button>
@@ -461,22 +461,22 @@ const AdminUsers = () => {
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Потвърждение за изтриване</h2>
-            <p className="mb-6 text-gray-600">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-white rounded-lg p-3 sm:p-6 max-w-md w-full">
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Потвърждение за изтриване</h2>
+            <p className="mb-4 sm:mb-6 text-gray-600 text-xs sm:text-sm">
               Сигурни ли сте, че искате да изтриете потребителя "{selectedUser.names}"?
             </p>
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-2 sm:space-x-3">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-xs sm:text-sm"
               >
                 Отказ
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs sm:text-sm"
               >
                 Изтрий
               </button>
