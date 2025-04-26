@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../store';
-import { logout, setUser } from '../../store/slices/authSlice';
-import { ShoppingCartIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { decodeJWT } from '../../utils/jwtUtils';
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { logout, setUser } from "../../store/slices/authSlice";
+import { ShoppingCartIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { decodeJWT } from "../../utils/jwtUtils";
 
 interface User {
   id: string;
@@ -19,21 +19,26 @@ const Navbar = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, user, token } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user, token } = useSelector(
+    (state: RootState) => state.auth
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (token) {
       const decodedToken = decodeJWT(token);
-      console.log('Decoded token in Navbar:', decodedToken);
-      
+      console.log("Decoded token in Navbar:", decodedToken);
+
       // Check for admin role in the token claims
-      const role = decodedToken?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-      console.log('Role from token:', role);
-      
+      const role =
+        decodedToken?.[
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        ];
+      console.log("Role from token:", role);
+
       const isAdminUser = role === "Admin";
-      console.log('Is admin user:', isAdminUser);
-      
+      console.log("Is admin user:", isAdminUser);
+
       setIsAdmin(isAdminUser);
     } else {
       setIsAdmin(false);
@@ -42,24 +47,27 @@ const Navbar = () => {
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/');
+    navigate("/");
   };
 
   const getUserInitial = () => {
-    if (!user?.name) return '?';
+    if (!user?.name) return "?";
     return user.name.charAt(0).toUpperCase();
   };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -73,7 +81,9 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-2xl font-bold text-primary-600">SportZone</span>
+              <span className="text-2xl font-bold text-primary-600">
+                SportZone
+              </span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
@@ -132,14 +142,13 @@ const Navbar = () => {
           </div>
 
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <div className="ml-auto mr-4">
-            </div>
+            <div className="ml-auto mr-4"></div>
             <Link
-                to="/cart"
-                className="inline-flex items-center justify-center mr-3 p-2 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                <ShoppingCartIcon className="h-6 w-6" />
-              </Link>
+              to="/cart"
+              className="inline-flex items-center justify-center mr-3 p-2 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <ShoppingCartIcon className="h-6 w-6" />
+            </Link>
             {isAuthenticated ? (
               <div className="ml-3 relative" ref={dropdownRef}>
                 <button
@@ -164,7 +173,7 @@ const Navbar = () => {
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-gray-700"
                       >
                         Изход
                       </button>
@@ -192,8 +201,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      <div className={`sm:hidden ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
+      <div className={`sm:hidden ${isMobileMenuOpen ? "block" : "hidden"}`}>
         <div className="pt-2 pb-3 space-y-1">
           <Link
             to="/products"
@@ -226,7 +234,7 @@ const Navbar = () => {
               >
                 <ShoppingCartIcon className="h-6 w-6" />
               </Link>
-            </> 
+            </>
           )}
         </div>
         <div className="pt-4 pb-3 border-t border-gray-200">
@@ -240,8 +248,12 @@ const Navbar = () => {
                 />
               </div>
               <div className="ml-3">
-                <div className="text-base font-medium text-gray-800">{user?.name}</div>
-                <div className="text-sm font-medium text-gray-500">{user?.email}</div>
+                <div className="text-base font-medium text-gray-800">
+                  {user?.name}
+                </div>
+                <div className="text-sm font-medium text-gray-500">
+                  {user?.email}
+                </div>
               </div>
             </div>
           ) : (
@@ -281,4 +293,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar; 
+export default Navbar;
