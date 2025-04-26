@@ -7,7 +7,7 @@ export interface Product {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  mainImageUrl: string;
   regularPrice: number;
   quantity: number;
   categoryId: string;
@@ -44,4 +44,4 @@ export interface FilterSidebarProps {
   onSearchChange: (query: string) => void;
   onPriceRangeChange?: (range: PriceRange) => void;
   onRatingChange?: (rating: number) => void;
-} 
+}

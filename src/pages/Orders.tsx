@@ -9,6 +9,7 @@ import {
   getOrderStatusText,
   getOrderStatusColor,
 } from "../enums/OrderStatus";
+import { decodeJWT } from "../utils/jwtUtils";
 
 interface Order {
   id: string;
@@ -40,7 +41,14 @@ const Orders = () => {
   const [itemsPerPage, setItemsPerPage] = useState(PAGE_SIZE_OPTIONS[0]);
   const [sortBy, setSortBy] = useState('createdOn');
   const [sortDescending, setSortDescending] = useState(true);
-  const { token, user } = useSelector((state: RootState) => state.auth);
+  const { token } = useSelector((state: RootState) => state.auth);
+
+  // Get user ID from JWT token
+  const getUserIdFromToken = () => {
+    if (!token) return null;
+    const decoded = decodeJWT(token);
+    return decoded?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || null;
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -59,12 +67,18 @@ const Orders = () => {
 
   const fetchOrders = async () => {
     try {
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        toast.error("Грешка при идентификация на потребителя");
+        return;
+      }
+
       const queryParams = new URLSearchParams({
         PageNumber: currentPage.toString(),
         PageSize: itemsPerPage.toString(),
         SortBy: sortBy,
         SortDescending: sortDescending.toString(),
-        UserId: user?.id || ''
+        UserId: userId
       });
 
       const response = await fetch(

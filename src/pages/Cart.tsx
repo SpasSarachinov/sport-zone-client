@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { removeItem, updateQuantity, clearCart } from '../store/slices/cartSlice';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';

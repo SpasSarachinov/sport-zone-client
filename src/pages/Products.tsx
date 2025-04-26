@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../store';
-import ProductCard from '../components/products/ProductCard';
-import FilterSidebar from '../components/products/FilterSidebar';
-import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { Product } from '../types';
+import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams, Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../store";
+import ProductCard from "../components/products/ProductCard";
+import FilterSidebar from "../components/products/FilterSidebar";
+import { PencilIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { Product } from "../types";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface FilterState {
   category: string | null;
@@ -30,12 +32,12 @@ const Products = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState<FilterState>({
     category: null,
-    search: '',
+    search: "",
     minPrice: null,
     maxPrice: null,
     rating: null,
     pageSize: 10,
-    pageNumber: 1
+    pageNumber: 1,
   });
   const [isLoading, setIsLoading] = useState(false);
   const fetchTimeoutRef = useRef<number>();
@@ -43,18 +45,20 @@ const Products = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('https://sportzone-api.onrender.com/api/Categories');
+        const response = await fetch(
+          "https://sportzone-api.onrender.com/api/Categories"
+        );
         const data = await response.json();
         if (Array.isArray(data)) {
           setCategories(data);
         } else if (data.items && Array.isArray(data.items)) {
           setCategories(data.items);
         } else {
-          console.error('Unexpected categories response format:', data);
+          console.error("Unexpected categories response format:", data);
           setCategories([]);
         }
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error("Error fetching categories:", error);
         setCategories([]);
       }
     };
@@ -63,21 +67,27 @@ const Products = () => {
   }, []);
 
   useEffect(() => {
-    const category = searchParams.get('category');
-    const search = searchParams.get('search');
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const rating = searchParams.get('rating');
-    
-    console.log('Initializing filters from URL:', { category, search, minPrice, maxPrice, rating });
-    
-    setFilters(prev => ({
+    const category = searchParams.get("category");
+    const search = searchParams.get("search");
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
+    const rating = searchParams.get("rating");
+
+    console.log("Initializing filters from URL:", {
+      category,
+      search,
+      minPrice,
+      maxPrice,
+      rating,
+    });
+
+    setFilters((prev) => ({
       ...prev,
       category: category || null,
-      search: search || '',
+      search: search || "",
       minPrice: minPrice ? Number(minPrice) : null,
       maxPrice: maxPrice ? Number(maxPrice) : null,
-      rating: rating ? Number(rating) : null
+      rating: rating ? Number(rating) : null,
     }));
   }, []);
 
@@ -85,29 +95,29 @@ const Products = () => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        let url = 'https://sportzone-api.onrender.com/api/Products';
+        let url = "https://sportzone-api.onrender.com/api/Products";
         const params = new URLSearchParams();
-        
-        if (filters.search.trim() !== '') {
-          params.append('Title', filters.search.trim());
+
+        if (filters.search.trim() !== "") {
+          params.append("Title", filters.search.trim());
         }
         if (filters.category) {
-          params.append('CategoryId', filters.category);
+          params.append("CategoryId", filters.category);
         }
         if (filters.minPrice !== null) {
-          params.append('MinPrice', filters.minPrice.toString());
+          params.append("MinPrice", filters.minPrice.toString());
         }
         if (filters.maxPrice !== null) {
-          params.append('MaxPrice', filters.maxPrice.toString());
+          params.append("MaxPrice", filters.maxPrice.toString());
         }
         if (filters.rating !== null) {
-          params.append('MinRating', filters.rating.toString());
+          params.append("MinRating", filters.rating.toString());
         }
         if (filters.pageSize) {
-          params.append('PageSize', filters.pageSize.toString());
+          params.append("PageSize", filters.pageSize.toString());
         }
         if (filters.pageNumber) {
-          params.append('PageNumber', filters.pageNumber.toString());
+          params.append("PageNumber", filters.pageNumber.toString());
         }
 
         const queryString = params.toString();
@@ -115,21 +125,21 @@ const Products = () => {
           url += `?${queryString}`;
         }
 
-        console.log('Fetching products with URL:', url);
+        console.log("Fetching products with URL:", url);
         const response = await fetch(url);
         const data = await response.json();
-        console.log('Products response:', data);
-        
+        console.log("Products response:", data);
+
         if (data.items && Array.isArray(data.items)) {
           setProducts(data.items);
           setTotalCount(data.totalCount || 0);
         } else {
-          console.error('Unexpected API response format:', data);
+          console.error("Unexpected API response format:", data);
           setProducts([]);
           setTotalCount(0);
         }
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
         setProducts([]);
         setTotalCount(0);
       } finally {
@@ -151,48 +161,48 @@ const Products = () => {
   }, [filters]);
 
   const handleApplyFilters = (newFilters: Partial<FilterState>) => {
-    console.log('Applying new filters:', newFilters);
+    console.log("Applying new filters:", newFilters);
     const updatedFilters = { ...filters, ...newFilters };
-    console.log('Updated filters:', updatedFilters);
-    
+    console.log("Updated filters:", updatedFilters);
+
     setFilters(updatedFilters);
-    
+
     const newParams = new URLSearchParams();
     if (updatedFilters.category) {
-      newParams.set('category', updatedFilters.category);
+      newParams.set("category", updatedFilters.category);
     }
     if (updatedFilters.search) {
-      newParams.set('search', updatedFilters.search);
+      newParams.set("search", updatedFilters.search);
     }
     if (updatedFilters.minPrice !== null) {
-      newParams.set('minPrice', updatedFilters.minPrice.toString());
+      newParams.set("minPrice", updatedFilters.minPrice.toString());
     }
     if (updatedFilters.maxPrice !== null) {
-      newParams.set('maxPrice', updatedFilters.maxPrice.toString());
+      newParams.set("maxPrice", updatedFilters.maxPrice.toString());
     }
     if (updatedFilters.rating !== null) {
-      newParams.set('rating', updatedFilters.rating.toString());
+      newParams.set("rating", updatedFilters.rating.toString());
     }
-    
-    console.log('Setting new URL params:', newParams.toString());
+
+    console.log("Setting new URL params:", newParams.toString());
     setSearchParams(newParams);
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newPageSize = parseInt(e.target.value);
-    setFilters(prev => ({ ...prev, pageSize: newPageSize }));
-    setSearchParams(prev => {
+    setFilters((prev) => ({ ...prev, pageSize: newPageSize }));
+    setSearchParams((prev) => {
       const newParams = new URLSearchParams(prev);
-      newParams.set('pageSize', newPageSize.toString());
+      newParams.set("pageSize", newPageSize.toString());
       return newParams;
     });
   };
 
   const handlePageChange = (newPage: number) => {
-    setFilters(prev => ({ ...prev, pageNumber: newPage }));
-    setSearchParams(prev => {
+    setFilters((prev) => ({ ...prev, pageNumber: newPage }));
+    setSearchParams((prev) => {
       const newParams = new URLSearchParams(prev);
-      newParams.set('page', newPage.toString());
+      newParams.set("page", newPage.toString());
       return newParams;
     });
   };
@@ -201,16 +211,19 @@ const Products = () => {
 
   const getCategoryName = (categoryId: string | null) => {
     if (!categoryId) return null;
-    return categories.find(c => c.id === categoryId)?.name || null;
+    return categories.find((c) => c.id === categoryId)?.name || null;
   };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-black">
-              {getCategoryName(filters.category) ? `${getCategoryName(filters.category)} Продукти` : 'Всички продукти'}
+              {getCategoryName(filters.category)
+                ? `${getCategoryName(filters.category)} Продукти`
+                : "Всички продукти"}
             </h1>
             <p className="text-black mt-2">
               Показване на {products.length} от {totalCount} продукта
@@ -233,7 +246,7 @@ const Products = () => {
                 <option value="100">100</option>
               </select>
             </div>
-            {user?.role === 'admin' && (
+            {user?.role === "admin" && (
               <div className="flex space-x-4">
                 <Link
                   to="/admin/products/new"
@@ -261,14 +274,11 @@ const Products = () => {
             searchQuery={filters.search}
             onApplyFilters={handleApplyFilters}
           />
-          
+
           <div className="flex-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product}
-                />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
@@ -297,12 +307,14 @@ const Products = () => {
                   >
                     &lsaquo;
                   </button>
-                  
+
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter(page => 
-                      page === 1 || 
-                      page === totalPages || 
-                      (page >= filters.pageNumber - 2 && page <= filters.pageNumber + 2)
+                    .filter(
+                      (page) =>
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= filters.pageNumber - 2 &&
+                          page <= filters.pageNumber + 2)
                     )
                     .map((page, index, array) => (
                       <React.Fragment key={page}>
@@ -313,16 +325,15 @@ const Products = () => {
                           onClick={() => handlePageChange(page)}
                           className={`px-3 py-1 rounded-md ${
                             filters.pageNumber === page
-                              ? 'bg-primary-600 text-white'
-                              : 'border border-gray-300 hover:bg-gray-100'
+                              ? "bg-primary-600 text-white"
+                              : "border border-gray-300 hover:bg-gray-100"
                           }`}
                         >
                           {page}
                         </button>
                       </React.Fragment>
-                    ))
-                  }
-                  
+                    ))}
+
                   <button
                     onClick={() => handlePageChange(filters.pageNumber + 1)}
                     disabled={filters.pageNumber === totalPages}
@@ -347,4 +358,4 @@ const Products = () => {
   );
 };
 
-export default Products; 
+export default Products;
