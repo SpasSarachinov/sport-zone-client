@@ -45,9 +45,30 @@ const Navbar = () => {
     }
   }, [token]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("https://sportzone-api.onrender.com/api/Auth/logout", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+
+      setIsOpen(false);
+      dispatch(logout());
+      navigate("/");
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Still logout locally even if the API call fails
+      dispatch(logout());
+      setIsOpen(false);
+      navigate("/");
+    }
   };
 
   const getUserInitial = () => {
