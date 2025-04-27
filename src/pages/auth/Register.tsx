@@ -1,46 +1,82 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setUser, setToken } from '../../store/slices/authSlice';
-import TermsOfService from '../../components/modals/TermsOfService';
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUser, setToken } from "../../store/slices/authSlice";
+import TermsOfService from "../../components/modals/TermsOfService";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    names: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: '',
+    names: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [showErrorMessage, setShowErrorMessage] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+  useEffect(() => {
+    if (error) {
+      setShowErrorMessage(true);
+      const hideTimer = setTimeout(() => {
+        setShowErrorMessage(false);
+      }, 4000);
+      const clearTimer = setTimeout(() => {
+        setError("");
+      }, 5000);
+
+      return () => {
+        clearTimeout(hideTimer);
+        clearTimeout(clearTimer);
+      };
+    }
+  }, [error]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
-    if (type === 'checkbox' && name === 'acceptTerms') {
+    if (type === "checkbox" && name === "acceptTerms") {
       setAcceptedTerms(checked);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+
+    if (
+      !formData.names.trim() ||
+      !formData.email.trim() ||
+      !formData.phone.trim() ||
+      !formData.password.trim() ||
+      !formData.confirmPassword.trim()
+    ) {
+      setError("Моля попълнете всички полета");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Моля въведете валиден имейл адрес");
+      return;
+    }
+
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Неуспешна регистрация');
+      setError("Въвели сте различни пароли");
       return;
     }
 
     if (!acceptedTerms) {
-      setError('Неуспешна регистрация');
+      setError("Моля приемете общите условия");
       return;
     }
 
@@ -54,36 +90,43 @@ const Register = () => {
         phone: formData.phone,
       };
 
-      const response = await fetch('https://sportzone-api.onrender.com/api/Auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        "https://sportzone-api.onrender.com/api/Auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       let data;
       try {
         data = await response.json();
       } catch (jsonError) {
-        setError('Неуспешна регистрация');
+        setError("Неуспешна регистрация");
         return;
       }
 
       if (!response.ok) {
-        setError('Неуспешна регистрация');
+        if (response.status === 409) {
+          setError("Имейл адресът вече се използва");
+        } else {
+          setError("Неуспешна регистрация");
+        }
         return;
       }
 
       // Redirect to login page with success message
-      navigate('/login', { 
-        state: { 
-          message: 'Регистрацията е успешна! Моля, влезте с вашите данни.' 
-        } 
+      navigate("/login", {
+        state: {
+          message: "Регистрацията е успешна! Моля, влезте с вашите данни.",
+        },
       });
     } catch (err) {
-      console.error('Registration error:', err);
-      setError('Неуспешна регистрация');
+      console.error("Registration error:", err);
+      setError("Неуспешна регистрация");
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +140,7 @@ const Register = () => {
             Създаване на акаунт
           </h2>
           <p className="mt-2 text-center text-sm text-dark-700">
-            Вече имате акаунт?{' '}
+            Вече имате акаунт?{" "}
             <Link
               to="/login"
               className="font-medium text-primary-400 hover:text-primary-300"
@@ -108,20 +151,26 @@ const Register = () => {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-900/20 border border-red-500 text-red-400 px-4 py-3 rounded">
+            <div
+              className={` border border-red-500 text-red-400 px-4 py-3 rounded transition-opacity duration-1000 ${
+                showErrorMessage ? "opacity-100" : "opacity-0"
+              }`}
+            >
               {error}
             </div>
           )}
           <div className="space-y-4">
             <div>
-              <label htmlFor="names" className="block text-sm font-medium text-dark-700 mb-2">
-                Имена
+              <label
+                htmlFor="names"
+                className="block text-sm font-medium text-dark-700 mb-2"
+              >
+                Имена <span className="text-red-500">*</span>
               </label>
               <input
                 id="names"
                 name="names"
                 type="text"
-                required
                 className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете имена"
                 value={formData.names}
@@ -129,15 +178,17 @@ const Register = () => {
               />
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-dark-700 mb-2">
-                Имейл адрес
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-dark-700 mb-2"
+              >
+                Имейл адрес <span className="text-red-500">*</span>
               </label>
               <input
                 id="email"
                 name="email"
-                type="email"
+                type="text"
                 autoComplete="email"
-                required
                 className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете имейл адрес"
                 value={formData.email}
@@ -145,15 +196,17 @@ const Register = () => {
               />
             </div>
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-dark-700 mb-2">
-                Телефонен номер
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-dark-700 mb-2"
+              >
+                Телефонен номер <span className="text-red-500">*</span>
               </label>
               <input
                 id="phone"
                 name="phone"
                 type="text"
                 autoComplete="phone"
-                required
                 className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете телефонен номер"
                 value={formData.phone}
@@ -161,15 +214,17 @@ const Register = () => {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-dark-700 mb-2">
-                Парола
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-dark-700 mb-2"
+              >
+                Парола <span className="text-red-500">*</span>
               </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="new-password"
-                required
                 className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете парола"
                 value={formData.password}
@@ -177,15 +232,17 @@ const Register = () => {
               />
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-dark-700 mb-2">
-                Потвърдете паролата
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-dark-700 mb-2"
+              >
+                Потвърдете паролата <span className="text-red-500">*</span>
               </label>
               <input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
-                required
                 className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Въведете паролата отново"
                 value={formData.confirmPassword}
@@ -199,19 +256,25 @@ const Register = () => {
               id="acceptTerms"
               name="acceptTerms"
               type="checkbox"
-              className="h-4 w-4 text-primary-500 focus:ring-primary-500 border-dark-300 rounded bg-dark-300"
+              className="peer hidden"
               checked={acceptedTerms}
               onChange={handleChange}
             />
-            <label htmlFor="acceptTerms" className="ml-2 block text-sm text-dark-700">
-              Прочетох и приемам{' '}
+            <label
+              htmlFor="acceptTerms"
+              className="h-5 w-5 border border-dark-300 rounded bg-dark-300 text-white peer-checked:bg-red-500  peer-checked:border-transparent cursor-pointer flex items-center justify-center"
+            >
+              ✓
+            </label>
+            <span className="ml-2 block text-sm text-dark-700">
+              Прочетох и приемам{" "}
               <span
                 onClick={() => setIsTermsOpen(true)}
                 className="font-medium text-primary-400 hover:text-primary-300 cursor-pointer"
               >
                 общите условия
               </span>
-            </label>
+            </span>
           </div>
 
           <div>
@@ -222,22 +285,41 @@ const Register = () => {
             >
               {isLoading ? (
                 <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Регистрация...
                 </span>
               ) : (
-                'Регистрация'
+                "Регистрация"
               )}
             </button>
           </div>
         </form>
       </div>
-      <TermsOfService isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
+      <TermsOfService
+        isOpen={isTermsOpen}
+        onClose={() => setIsTermsOpen(false)}
+      />
     </div>
   );
 };
 
-export default Register; 
+export default Register;

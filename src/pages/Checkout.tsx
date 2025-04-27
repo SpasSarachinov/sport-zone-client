@@ -1,15 +1,23 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store';
-import { ArrowLeftIcon } from '@heroicons/react/20/solid';
-import { toast, Toaster } from 'react-hot-toast';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "../store";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import { toast, Toaster } from "react-hot-toast";
 
-const Toast = ({ message, type }: { message: string; type: 'success' | 'error' }) => {
+const Toast = ({
+  message,
+  type,
+}: {
+  message: string;
+  type: "success" | "error";
+}) => {
   return (
-    <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-      type === 'success' ? 'bg-green-500' : 'bg-red-500'
-    } text-white`}>
+    <div
+      className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === "success" ? "bg-green-500" : "bg-red-500"
+      } text-white`}
+    >
       {message}
     </div>
   );
@@ -19,78 +27,97 @@ const Checkout = () => {
   const navigate = useNavigate();
   const token = useSelector((state: RootState) => state.auth.token);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
   const [orderData, setOrderData] = useState({
-    names: '',
-    postalCode: '',
-    country: '',
-    city: '',
-    address: '',
-    phone: ''
+    names: "",
+    postalCode: "",
+    country: "",
+    city: "",
+    address: "",
+    phone: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const showToastMessage = (message: string, type: 'success' | 'error') => {
+  const showToastMessage = (
+    message: string,
+    type: "success" | "error",
+    duration: number = 3000,
+    callback?: () => void
+  ) => {
     setToastMessage(message);
     setToastType(type);
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
-    }, 3000);
+      if (callback) callback();
+    }, duration);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setOrderData(prev => ({
+    setOrderData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!token) {
-      toast.error('Моля, влезте в профила си преди да направите поръчка');
+      toast.error("Моля, влезте в профила си преди да направите поръчка");
       return;
     }
-
+    const { names, postalCode, country, city, address, phone } = orderData;
+    if (!names || !postalCode || !country || !city || !address || !phone) {
+      toast.error("Моля, попълнете всички полета", {
+        duration: 3000,
+        position: "top-center",
+      });
+      return;
+    }
+    toast.success("Обработване на поръчката...", {
+      duration: 3000,
+      position: "top-center",
+    });
     try {
-      const response = await fetch('https://sportzone-api.onrender.com/api/Orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(orderData)
-      });
-
+      const response = await fetch(
+        "https://sportzone-api.onrender.com/api/Orders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(orderData),
+        }
+      );
       if (!response.ok) {
-        throw new Error('Failed to submit order');
+        throw new Error("Failed to submit order");
       }
-
-      toast.success('Поръчката беше направена успешно!', {
+      toast.success("Поръчката беше направена успешно!", {
         duration: 2000,
-        position: 'top-center'
+        position: "top-center",
       });
-
       setTimeout(() => {
-        toast.success('Благодарим ви за поръчката!', {
+        toast.success("Благодарим ви за поръчката!", {
           duration: 4000,
-          position: 'top-center',
+          position: "top-center",
           style: {
-            background: '#4CAF50',
-            color: '#fff',
-            fontSize: '1.1rem',
-            padding: '1rem 2rem',
-            borderRadius: '0.5rem',
+            background: "#4CAF50",
+            color: "#fff",
+            fontSize: "1.1rem",
+            padding: "1rem 2rem",
+            borderRadius: "0.5rem",
           },
         });
-        navigate('/');
+        navigate("/");
       }, 2000);
     } catch (error) {
-      console.error('Error submitting order:', error);
-      toast.error('Възникна грешка при изпращането на поръчката');
+      console.error("Error submitting order:", error);
+      toast.error("Възникна грешка при изпращането на поръчката");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -101,7 +128,7 @@ const Checkout = () => {
       <div className="max-w-2xl mx-auto">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center text-white hover:text-gray-900 mb-6"
+          className="flex items-center text-white mb-6"
         >
           <ArrowLeftIcon className="h-5 w-5 mr-2" />
           Назад
@@ -109,13 +136,18 @@ const Checkout = () => {
 
         <div className="bg-white rounded-lg shadow-xl overflow-hidden">
           <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Информация за поръчката</h1>
-            
+            <h1 className="text-2xl font-bold text-gray-900 mb-6">
+              Информация за поръчката
+            </h1>
+
             <form onSubmit={handleSubmitOrder} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
-                  <label htmlFor="names" className="block text-sm font-medium text-gray-700">
-                    Имена
+                  <label
+                    htmlFor="names"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Имена <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -129,13 +161,15 @@ const Checkout = () => {
                       placeholder-gray-400 text-gray-900
                       hover:border-gray-400"
                     placeholder="Въведете пълното си име"
-                    required
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
-                    Пощенски код
+                  <label
+                    htmlFor="postalCode"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Пощенски код <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -149,13 +183,15 @@ const Checkout = () => {
                       placeholder-gray-400 text-gray-900
                       hover:border-gray-400"
                     placeholder="Въведете пощенски код"
-                    required
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="country" className="block text-sm font-medium text-gray-700">
-                    Държава
+                  <label
+                    htmlFor="country"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Държава <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -169,13 +205,15 @@ const Checkout = () => {
                       placeholder-gray-400 text-gray-900
                       hover:border-gray-400"
                     placeholder="Въведете държава"
-                    required
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                    Град
+                  <label
+                    htmlFor="city"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Град <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -189,13 +227,15 @@ const Checkout = () => {
                       placeholder-gray-400 text-gray-900
                       hover:border-gray-400"
                     placeholder="Въведете град"
-                    required
                   />
                 </div>
 
                 <div className="md:col-span-2 space-y-1">
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                    Адрес
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Адрес <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -209,13 +249,15 @@ const Checkout = () => {
                       placeholder-gray-400 text-gray-900
                       hover:border-gray-400"
                     placeholder="Въведете пълен адрес"
-                    required
                   />
                 </div>
 
                 <div className="md:col-span-2 space-y-1">
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                    Телефон
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Телефон <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -229,7 +271,6 @@ const Checkout = () => {
                       placeholder-gray-400 text-gray-900
                       hover:border-gray-400"
                     placeholder="Въведете телефонен номер"
-                    required
                   />
                 </div>
               </div>
@@ -237,7 +278,7 @@ const Checkout = () => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="inline-flex justify-center hover:text-gray-900 items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                  className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                 >
                   Завърши поръчката
                 </button>
@@ -250,4 +291,4 @@ const Checkout = () => {
   );
 };
 
-export default Checkout; 
+export default Checkout;

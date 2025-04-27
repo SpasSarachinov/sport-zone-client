@@ -54,6 +54,10 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim() && !password.trim()) {
+      setError("Моля попълнете всички полета");
+      return;
+    }
     setError("");
     setIsLoading(true);
 
@@ -73,16 +77,16 @@ const Login = () => {
       try {
         data = await response.json();
       } catch (jsonError) {
-        setError("Неуспешен опит за вход");
+        throw new Error("Моля въведете правилен имейл и парола");
         return;
       }
 
       if (!response.ok) {
-        throw new Error("Неуспешен опит за вход");
+        throw new Error("Моля въведете правилен имейл и парола");
       }
 
       if (!data.accessToken) {
-        throw new Error("Неуспешен опит за вход");
+        throw new Error("Моля въведете правилен имейл и парола");
       }
 
       // Decode the JWT token to get user information
@@ -102,7 +106,6 @@ const Login = () => {
         })
       );
 
-      // Only redirect to admin panel if user is admin
       if (role === "Admin") {
         navigate("/admin/products");
       } else {
@@ -110,7 +113,7 @@ const Login = () => {
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("Login failed");
+      setError("Моля въведете правилен имейл и парола");
     } finally {
       setIsLoading(false);
     }
@@ -152,43 +155,49 @@ const Login = () => {
               {error}
             </div>
           )}
-          <div className="space-y-4">
-            <div>
+          <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-1">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-dark-700 mb-2"
+                className="block text-sm font-medium text-gray-700"
               >
-                Имейл адрес
+                Имейл адрес <span className="text-red-500">*</span>
               </label>
               <input
                 id="email"
                 name="email"
-                type="email"
+                type="text"
                 autoComplete="email"
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Въведете имейл адрес"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm 
+                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 
+                  transition duration-150 ease-in-out
+                  placeholder-gray-400 text-gray-900
+                  hover:border-gray-400"
+                placeholder="Въведете имейл адрес"
               />
             </div>
-            <div>
+            <div className="space-y-1">
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-dark-700 mb-2"
+                className="block text-sm font-medium text-gray-700"
               >
-                Парола
+                Парола <span className="text-red-500">*</span>
               </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="current-password"
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-dark-300 rounded-md bg-dark-300 text-dark-900 placeholder-dark-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Въведете парола"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm 
+                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 
+                  transition duration-150 ease-in-out
+                  placeholder-gray-400 text-gray-900
+                  hover:border-gray-400"
+                placeholder="Въведете парола"
               />
             </div>
           </div>
