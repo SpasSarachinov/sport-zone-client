@@ -225,15 +225,13 @@ const AdminProducts = () => {
       errors.name = "Името е задължително";
     } else if (formData.name.length < 3) {
       errors.name = "Името трябва да е поне 3 символа";
-    } else if (formData.name.length > 50) {
-      errors.name = "Името не може да е по-дълго от 50 символа";
     }
 
     // Description validation
     if (!formData.description.trim()) {
       errors.description = "Описанието е задължително";
-    } else if (formData.description.length < 10) {
-      errors.description = "Описанието трябва да е поне 10 символа";
+    } else if (formData.description.length < 3) {
+      errors.description = "Описанието трябва да е поне 3 символа";
     }
 
     // Category validation
